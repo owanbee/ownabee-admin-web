@@ -280,8 +280,8 @@ export interface CreateInstitutionParentPayload {
 
 export interface UpdateInstitutionParentPayload {
   childName?: string;
-  phoneNumber?: string;
-  memo?: string;
+  phoneNumber?: string | undefined;
+  memo?: string | undefined;
 }
 
 // B2B: Portfolio Transfer Types
