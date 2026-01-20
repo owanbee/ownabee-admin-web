@@ -1,0 +1,134 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "Ownabee" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e10]: Ownabee
+        - navigation [ref=e11]:
+          - generic [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e14]
+              - text: Dashboard
+            - link "Classes" [ref=e19] [cursor=pointer]:
+              - /url: /classes
+              - img [ref=e20]
+              - text: Classes
+          - generic [ref=e23]:
+            - heading "Administration" [level=3] [ref=e24]
+            - generic [ref=e25]:
+              - link "Institutions" [ref=e26] [cursor=pointer]:
+                - /url: /admin/institutions
+                - img [ref=e27]
+                - text: Institutions
+              - link "Manage Classes" [ref=e31] [cursor=pointer]:
+                - /url: /admin/classes
+                - img [ref=e32]
+                - text: Manage Classes
+              - link "Student Codes" [ref=e37] [cursor=pointer]:
+                - /url: /admin/student-codes
+                - img [ref=e38]
+                - text: Student Codes
+              - link "Members" [ref=e41] [cursor=pointer]:
+                - /url: /admin/members
+                - img [ref=e42]
+                - text: Members
+              - link "Shared Tablets" [ref=e47] [cursor=pointer]:
+                - /url: /admin/shared-tablets
+                - img [ref=e48]
+                - text: Shared Tablets
+              - link "Parents" [ref=e50] [cursor=pointer]:
+                - /url: /admin/parents
+                - img [ref=e51]
+                - text: Parents
+              - link "Transfers" [ref=e55] [cursor=pointer]:
+                - /url: /admin/transfers
+                - img [ref=e56]
+                - text: Transfers
+        - paragraph [ref=e60]: Ownabee Admin Portal
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - button "조슈아 조슈아 Operator" [ref=e64] [cursor=pointer]:
+          - img "조슈아" [ref=e66]
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: 조슈아
+            - generic [ref=e69]: Operator
+          - img [ref=e70]
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - navigation [ref=e74]:
+            - link "Dashboard" [ref=e75] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e76]
+            - generic [ref=e78]: Admin
+            - img [ref=e79]
+            - generic [ref=e81]: Transfers
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - heading "Portfolio Transfer" [level=1] [ref=e84]
+              - paragraph [ref=e85]: Transfer portfolios from shared tablets to parent accounts
+            - link "View History" [ref=e87] [cursor=pointer]:
+              - /url: /admin/transfers/history
+              - button "View History" [ref=e88]:
+                - img [ref=e89]
+                - text: View History
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - heading "1. Select Source" [level=3] [ref=e96]:
+              - img [ref=e97]
+              - text: 1. Select Source
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: Institution
+                - generic [ref=e102]:
+                  - combobox "Institution" [ref=e103]:
+                    - option "Select institution"
+                    - option "성민교육기관" [selected]
+                    - option "Ownabee"
+                  - img
+              - generic [ref=e104]:
+                - generic [ref=e105]: Shared Tablet
+                - generic [ref=e106]:
+                  - combobox "Shared Tablet" [ref=e107]:
+                    - option "Select tablet" [selected]
+                  - img
+          - generic [ref=e108]:
+            - heading "2. Select Target Parent" [level=3] [ref=e110]:
+              - img [ref=e111]
+              - text: 2. Select Target Parent
+            - generic [ref=e116]:
+              - generic [ref=e117]: Parent
+              - generic [ref=e118]:
+                - combobox "Parent" [ref=e119]:
+                  - option "Select parent" [selected]
+                - img
+          - generic [ref=e120]:
+            - heading "3. Transfer Options" [level=3] [ref=e122]:
+              - img [ref=e123]
+              - text: 3. Transfer Options
+            - generic [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e128]: After Transfer
+                - generic [ref=e129]:
+                  - combobox "After Transfer" [ref=e130]:
+                    - option "Keep original (copy)" [selected]
+                    - option "Delete original (move)"
+                  - img
+              - generic [ref=e131]: Portfolios will be copied. Originals remain in the shared tablet.
+              - button "Transfer 0 Portfolio(s)" [disabled]
+        - generic [ref=e132]:
+          - heading "Select Portfolios (0/0)" [level=3] [ref=e134]:
+            - generic [ref=e135]:
+              - img [ref=e136]
+              - text: Select Portfolios (0/0)
+          - generic [ref=e139]:
+            - img [ref=e141]
+            - heading "Select a tablet" [level=3] [ref=e143]
+            - paragraph [ref=e144]: Choose a shared tablet to view its portfolios.
+```

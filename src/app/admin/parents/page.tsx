@@ -48,8 +48,9 @@ export default function ParentsPage() {
       try {
         const data = await api.getInstitutions();
         setInstitutions(data);
-        if (data.length > 0) {
-          setSelectedInstitutionId(data[0].id);
+        const firstInstitution = data[0];
+        if (firstInstitution) {
+          setSelectedInstitutionId(firstInstitution.id);
         }
       } catch (err) {
         console.error("Failed to fetch institutions:", err);

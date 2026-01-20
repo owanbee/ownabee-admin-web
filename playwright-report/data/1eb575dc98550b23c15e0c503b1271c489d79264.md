@@ -1,0 +1,109 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "Ownabee" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e10]: Ownabee
+        - navigation [ref=e11]:
+          - generic [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e14]
+              - text: Dashboard
+            - link "Classes" [ref=e19] [cursor=pointer]:
+              - /url: /classes
+              - img [ref=e20]
+              - text: Classes
+          - generic [ref=e23]:
+            - heading "Administration" [level=3] [ref=e24]
+            - generic [ref=e25]:
+              - link "Institutions" [ref=e26] [cursor=pointer]:
+                - /url: /admin/institutions
+                - img [ref=e27]
+                - text: Institutions
+              - link "Manage Classes" [ref=e31] [cursor=pointer]:
+                - /url: /admin/classes
+                - img [ref=e32]
+                - text: Manage Classes
+              - link "Student Codes" [ref=e37] [cursor=pointer]:
+                - /url: /admin/student-codes
+                - img [ref=e38]
+                - text: Student Codes
+              - link "Members" [ref=e41] [cursor=pointer]:
+                - /url: /admin/members
+                - img [ref=e42]
+                - text: Members
+              - link "Shared Tablets" [ref=e47] [cursor=pointer]:
+                - /url: /admin/shared-tablets
+                - img [ref=e48]
+                - text: Shared Tablets
+              - link "Parents" [ref=e50] [cursor=pointer]:
+                - /url: /admin/parents
+                - img [ref=e51]
+                - text: Parents
+              - link "Transfers" [ref=e55] [cursor=pointer]:
+                - /url: /admin/transfers
+                - img [ref=e56]
+                - text: Transfers
+        - paragraph [ref=e60]: Ownabee Admin Portal
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - button "조슈아 조슈아 Operator" [ref=e64] [cursor=pointer]:
+          - img "조슈아" [ref=e66]
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: 조슈아
+            - generic [ref=e69]: Operator
+          - img [ref=e70]
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - navigation [ref=e74]:
+            - link "Dashboard" [ref=e75] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e76]
+            - generic [ref=e78]: Admin
+            - img [ref=e79]
+            - link "Transfers" [ref=e81] [cursor=pointer]:
+              - /url: /admin/transfers
+            - img [ref=e82]
+            - generic [ref=e84]: History
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - heading "Transfer History" [level=1] [ref=e87]
+              - paragraph [ref=e88]: View all portfolio transfer records
+            - link "Back to Transfers" [ref=e90] [cursor=pointer]:
+              - /url: /admin/transfers
+              - button "Back to Transfers" [ref=e91]:
+                - img [ref=e92]
+                - text: Back to Transfers
+        - generic [ref=e94]:
+          - heading "Filters" [level=3] [ref=e96]
+          - generic [ref=e98]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: Institution
+              - generic [ref=e102]:
+                - combobox "Institution" [ref=e103]:
+                  - option "All institutions" [selected]
+                - img
+            - generic [ref=e105]:
+              - generic [ref=e106]: Start Date
+              - textbox "Start Date" [ref=e107]
+            - generic [ref=e109]:
+              - generic [ref=e110]: End Date
+              - textbox "End Date" [ref=e111]
+            - button "Clear Filters" [ref=e112] [cursor=pointer]
+        - generic [ref=e113]: No token provided
+        - generic [ref=e114]:
+          - heading "Transfers (0)" [level=3] [ref=e116]:
+            - img [ref=e117]
+            - text: Transfers (0)
+          - generic [ref=e122]:
+            - img [ref=e124]
+            - heading "No transfers found" [level=3] [ref=e128]
+            - paragraph [ref=e129]: No portfolio transfers match your filters.
+```

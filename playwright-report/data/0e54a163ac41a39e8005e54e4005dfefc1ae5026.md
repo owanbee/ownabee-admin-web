@@ -1,0 +1,99 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "Ownabee" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e10]: Ownabee
+        - navigation [ref=e11]:
+          - generic [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e14]
+              - text: Dashboard
+            - link "Classes" [ref=e19] [cursor=pointer]:
+              - /url: /classes
+              - img [ref=e20]
+              - text: Classes
+          - generic [ref=e23]:
+            - heading "Administration" [level=3] [ref=e24]
+            - generic [ref=e25]:
+              - link "Institutions" [ref=e26] [cursor=pointer]:
+                - /url: /admin/institutions
+                - img [ref=e27]
+                - text: Institutions
+              - link "Manage Classes" [ref=e31] [cursor=pointer]:
+                - /url: /admin/classes
+                - img [ref=e32]
+                - text: Manage Classes
+              - link "Student Codes" [ref=e37] [cursor=pointer]:
+                - /url: /admin/student-codes
+                - img [ref=e38]
+                - text: Student Codes
+              - link "Members" [ref=e41] [cursor=pointer]:
+                - /url: /admin/members
+                - img [ref=e42]
+                - text: Members
+              - link "Shared Tablets" [ref=e47] [cursor=pointer]:
+                - /url: /admin/shared-tablets
+                - img [ref=e48]
+                - text: Shared Tablets
+              - link "Parents" [ref=e50] [cursor=pointer]:
+                - /url: /admin/parents
+                - img [ref=e51]
+                - text: Parents
+              - link "Transfers" [ref=e55] [cursor=pointer]:
+                - /url: /admin/transfers
+                - img [ref=e56]
+                - text: Transfers
+        - paragraph [ref=e60]: Ownabee Admin Portal
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - button "조슈아 조슈아 Operator" [ref=e64] [cursor=pointer]:
+          - img "조슈아" [ref=e66]
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: 조슈아
+            - generic [ref=e69]: Operator
+          - img [ref=e70]
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - navigation [ref=e74]:
+            - link "Dashboard" [ref=e75] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e76]
+            - generic [ref=e78]: Admin
+            - img [ref=e79]
+            - generic [ref=e81]: Parents
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - heading "Parents" [level=1] [ref=e84]
+              - paragraph [ref=e85]: Manage institution parents for portfolio transfers
+            - button "Register Parent" [ref=e87] [cursor=pointer]:
+              - img [ref=e88]
+              - text: Register Parent
+        - generic [ref=e89]:
+          - generic [ref=e91]:
+            - generic [ref=e92]: Institution
+            - generic [ref=e93]:
+              - combobox "Institution" [ref=e94]:
+                - option "Select institution"
+                - option "성민교육기관" [selected]
+                - option "Ownabee"
+              - img
+          - generic [ref=e96]:
+            - generic [ref=e97]: Search
+            - textbox "Search" [ref=e98]:
+              - /placeholder: Search by child name or parent email...
+        - generic [ref=e99]:
+          - img [ref=e101]
+          - heading "No parents registered" [level=3] [ref=e105]
+          - paragraph [ref=e106]: Register a parent to enable portfolio transfers.
+          - button "Register Parent" [ref=e108] [cursor=pointer]:
+            - img [ref=e109]
+            - text: Register Parent
+```

@@ -1,0 +1,130 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "Ownabee" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e8]
+          - generic [ref=e10]: Ownabee
+        - navigation [ref=e11]:
+          - generic [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e14]
+              - text: Dashboard
+            - link "Classes" [ref=e19] [cursor=pointer]:
+              - /url: /classes
+              - img [ref=e20]
+              - text: Classes
+          - generic [ref=e23]:
+            - heading "Administration" [level=3] [ref=e24]
+            - generic [ref=e25]:
+              - link "Institutions" [ref=e26] [cursor=pointer]:
+                - /url: /admin/institutions
+                - img [ref=e27]
+                - text: Institutions
+              - link "Manage Classes" [ref=e31] [cursor=pointer]:
+                - /url: /admin/classes
+                - img [ref=e32]
+                - text: Manage Classes
+              - link "Student Codes" [ref=e37] [cursor=pointer]:
+                - /url: /admin/student-codes
+                - img [ref=e38]
+                - text: Student Codes
+              - link "Members" [ref=e41] [cursor=pointer]:
+                - /url: /admin/members
+                - img [ref=e42]
+                - text: Members
+              - link "Shared Tablets" [ref=e47] [cursor=pointer]:
+                - /url: /admin/shared-tablets
+                - img [ref=e48]
+                - text: Shared Tablets
+              - link "Parents" [ref=e50] [cursor=pointer]:
+                - /url: /admin/parents
+                - img [ref=e51]
+                - text: Parents
+              - link "Transfers" [ref=e55] [cursor=pointer]:
+                - /url: /admin/transfers
+                - img [ref=e56]
+                - text: Transfers
+        - paragraph [ref=e60]: Ownabee Admin Portal
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - button "조슈아 조슈아 Operator" [ref=e64] [cursor=pointer]:
+          - img "조슈아" [ref=e66]
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: 조슈아
+            - generic [ref=e69]: Operator
+          - img [ref=e70]
+      - main [ref=e72]:
+        - generic [ref=e75]:
+          - heading "Welcome, 조슈아!" [level=1] [ref=e76]
+          - paragraph [ref=e77]: Manage your classes, students, and portfolios from here.
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - heading "Your Profile" [level=3] [ref=e81]
+            - paragraph [ref=e82]: Your account information and roles
+          - generic [ref=e85]:
+            - paragraph [ref=e86]: holyfavor@gmail.com
+            - generic [ref=e88]: Operator
+        - generic [ref=e89]:
+          - link "My Classes View and manage your classes 0 classes accessible" [ref=e90] [cursor=pointer]:
+            - /url: /classes
+            - generic [ref=e91]:
+              - generic [ref=e93]:
+                - img [ref=e95]
+                - generic [ref=e98]:
+                  - heading "My Classes" [level=3] [ref=e99]
+                  - paragraph [ref=e100]: View and manage your classes
+              - generic [ref=e102]:
+                - generic [ref=e103]: 0 classes accessible
+                - img [ref=e104]
+          - link "Student Portfolios Manage student portfolios Select a class to view portfolios" [ref=e106] [cursor=pointer]:
+            - /url: /classes
+            - generic [ref=e107]:
+              - generic [ref=e109]:
+                - img [ref=e111]
+                - generic [ref=e113]:
+                  - heading "Student Portfolios" [level=3] [ref=e114]
+                  - paragraph [ref=e115]: Manage student portfolios
+              - generic [ref=e117]:
+                - generic [ref=e118]: Select a class to view portfolios
+                - img [ref=e119]
+          - link "Institutions Manage institutions Create and manage institutions" [ref=e121] [cursor=pointer]:
+            - /url: /admin/institutions
+            - generic [ref=e122]:
+              - generic [ref=e124]:
+                - img [ref=e126]
+                - generic [ref=e130]:
+                  - heading "Institutions" [level=3] [ref=e131]
+                  - paragraph [ref=e132]: Manage institutions
+              - generic [ref=e134]:
+                - generic [ref=e135]: Create and manage institutions
+                - img [ref=e136]
+          - link "Members Manage institution members Assign roles and manage access" [ref=e138] [cursor=pointer]:
+            - /url: /admin/members
+            - generic [ref=e139]:
+              - generic [ref=e141]:
+                - img [ref=e143]
+                - generic [ref=e148]:
+                  - heading "Members" [level=3] [ref=e149]
+                  - paragraph [ref=e150]: Manage institution members
+              - generic [ref=e152]:
+                - generic [ref=e153]: Assign roles and manage access
+                - img [ref=e154]
+          - link "Student Codes Generate and manage codes Create student registration codes" [ref=e156] [cursor=pointer]:
+            - /url: /admin/student-codes
+            - generic [ref=e157]:
+              - generic [ref=e159]:
+                - img [ref=e161]
+                - generic [ref=e164]:
+                  - heading "Student Codes" [level=3] [ref=e165]
+                  - paragraph [ref=e166]: Generate and manage codes
+              - generic [ref=e168]:
+                - generic [ref=e169]: Create student registration codes
+                - img [ref=e170]
+```
