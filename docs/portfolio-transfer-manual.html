@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ownabee Admin - 포트폴리오 이관 매뉴얼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 12px;
+        }
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .section h2 {
+            color: #f97316;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fed7aa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h2 .step-num {
+            background: #f97316;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .section h3 {
+            color: #333;
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+        }
+        .section p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .section ul {
+            margin-left: 20px;
+            color: #666;
+        }
+        .section ul li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .highlight strong {
+            color: #ea580c;
+        }
+        .field-list {
+            background: #f9fafb;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .field-list dt {
+            font-weight: 600;
+            color: #374151;
+            margin-top: 10px;
+        }
+        .field-list dt:first-child {
+            margin-top: 0;
+        }
+        .field-list dd {
+            color: #6b7280;
+            margin-left: 15px;
+            font-size: 0.95rem;
+        }
+        .workflow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .workflow-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 20px 15px;
+            background: #fff7ed;
+            border-radius: 12px;
+            border: 2px solid #fed7aa;
+        }
+        .workflow-step .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .workflow-step .title {
+            font-weight: 600;
+            color: #ea580c;
+        }
+        .workflow-arrow {
+            color: #f97316;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .tip {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .tip::before {
+            content: "💡 ";
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .warning::before {
+            content: "⚠️ ";
+        }
+        footer {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 600px) {
+            .workflow-diagram {
+                flex-direction: column;
+            }
+            .workflow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ownabee Admin Portal</h1>
+            <p>포트폴리오 이관 매뉴얼</p>
+        </header>
+
+        <!-- Overview -->
+        <div class="section">
+            <h2>개요</h2>
+            <p>이 매뉴얼은 Ownabee Admin Portal에서 공용 태블릿의 포트폴리오를 학부모 계정으로 이관하는 방법을 설명합니다.</p>
+
+            <div class="workflow-diagram">
+                <div class="workflow-step">
+                    <div class="icon">📱</div>
+                    <div class="title">태블릿 생성</div>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">
+                    <div class="icon">👨‍👩‍👧</div>
+                    <div class="title">학부모 등록</div>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-step">
+                    <div class="icon">📁</div>
+                    <div class="title">포트폴리오 이관</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Shared Tablets -->
+        <div class="section">
+            <h2><span class="step-num">1</span> 공용 태블릿 생성</h2>
+            <p>기관에서 사용할 공용 태블릿 계정을 생성합니다.</p>
+
+            <h3>접근 경로</h3>
+            <p>사이드바 메뉴 → <strong>Administration</strong> → <strong>Shared Tablets</strong></p>
+
+            <h3>태블릿 생성 방법</h3>
+            <ol>
+                <li>우측 상단의 <strong>"+ Add Shared Tablet"</strong> 버튼을 클릭합니다.</li>
+                <li>모달 창에서 다음 정보를 입력합니다:</li>
+            </ol>
+
+            <dl class="field-list">
+                <dt>Institution (기관)</dt>
+                <dd>태블릿을 등록할 기관을 선택합니다.</dd>
+
+                <dt>Tablet Name (태블릿 이름)</dt>
+                <dd>예: "Tablet 1", "Front Desk" 등 식별하기 쉬운 이름</dd>
+
+                <dt>Login ID (로그인 ID)</dt>
+                <dd>태블릿에서 로그인할 때 사용할 고유 ID (예: tablet001)</dd>
+
+                <dt>PIN Code (PIN 코드) - 선택사항</dt>
+                <dd>4-6자리 숫자. 설정하지 않으면 Login ID만으로 로그인 가능</dd>
+            </dl>
+
+            <div class="tip">
+                PIN 코드는 선택사항입니다. 보안이 필요한 경우에만 설정하세요.
+            </div>
+        </div>
+
+        <!-- Step 2: Parents -->
+        <div class="section">
+            <h2><span class="step-num">2</span> 학부모 등록</h2>
+            <p>포트폴리오를 이관받을 학부모 계정을 등록합니다.</p>
+
+            <h3>접근 경로</h3>
+            <p>사이드바 메뉴 → <strong>Administration</strong> → <strong>Parents</strong></p>
+
+            <h3>학부모 등록 방법</h3>
+            <ol>
+                <li>우측 상단의 <strong>"+ Register Parent"</strong> 버튼을 클릭합니다.</li>
+                <li>모달 창에서 다음 정보를 입력합니다:</li>
+            </ol>
+
+            <dl class="field-list">
+                <dt>Institution (기관)</dt>
+                <dd>학부모를 등록할 기관을 선택합니다.</dd>
+
+                <dt>Find Parent Account (학부모 계정 찾기)</dt>
+                <dd>학부모의 이메일 주소로 검색합니다. (최소 2자 이상)</dd>
+
+                <dt>Child Name (자녀 이름)</dt>
+                <dd>포트폴리오를 받을 자녀의 이름을 입력합니다.</dd>
+
+                <dt>Phone Number (전화번호) - 선택사항</dt>
+                <dd>학부모 연락처</dd>
+
+                <dt>Memo (메모) - 선택사항</dt>
+                <dd>추가 메모 사항</dd>
+            </dl>
+
+            <div class="highlight">
+                <strong>중요:</strong> 학부모는 먼저 Ownabee 앱에서 계정을 생성해야 합니다.
+                기존 계정이 있는 사용자만 검색하여 등록할 수 있습니다.
+            </div>
+        </div>
+
+        <!-- Step 3: Transfers -->
+        <div class="section">
+            <h2><span class="step-num">3</span> 포트폴리오 이관</h2>
+            <p>공용 태블릿의 포트폴리오를 학부모 계정으로 이관합니다.</p>
+
+            <h3>접근 경로</h3>
+            <p>사이드바 메뉴 → <strong>Administration</strong> → <strong>Transfers</strong></p>
+
+            <h3>이관 절차</h3>
+
+            <h4 style="margin-top: 20px; color: #f97316;">1. Select Source (소스 선택)</h4>
+            <dl class="field-list">
+                <dt>Institution (기관)</dt>
+                <dd>기관을 선택합니다.</dd>
+
+                <dt>Shared Tablet (공용 태블릿)</dt>
+                <dd>포트폴리오가 있는 태블릿을 선택합니다.</dd>
+            </dl>
+
+            <h4 style="margin-top: 20px; color: #f97316;">2. Select Target Parent (대상 학부모 선택)</h4>
+            <dl class="field-list">
+                <dt>Parent (학부모)</dt>
+                <dd>포트폴리오를 이관받을 학부모를 선택합니다. 선택하면 학부모 정보가 표시됩니다.</dd>
+            </dl>
+
+            <h4 style="margin-top: 20px; color: #f97316;">3. Transfer Options (이관 옵션)</h4>
+            <dl class="field-list">
+                <dt>After Transfer (이관 후 처리)</dt>
+                <dd>
+                    <ul style="margin-top: 5px;">
+                        <li><strong>Keep original (copy)</strong>: 원본을 유지하고 복사본을 이관</li>
+                        <li><strong>Delete original (move)</strong>: 원본을 삭제하고 이동</li>
+                    </ul>
+                </dd>
+            </dl>
+
+            <h4 style="margin-top: 20px; color: #f97316;">4. Select Portfolios (포트폴리오 선택)</h4>
+            <p>태블릿을 선택하면 하단에 포트폴리오 목록이 표시됩니다.</p>
+            <ul>
+                <li>이관할 포트폴리오를 클릭하여 선택합니다.</li>
+                <li><strong>"Select All"</strong> 버튼으로 전체 선택할 수 있습니다.</li>
+                <li>선택된 포트폴리오는 주황색 테두리와 체크 표시로 구분됩니다.</li>
+            </ul>
+
+            <h4 style="margin-top: 20px; color: #f97316;">5. 이관 실행</h4>
+            <p><strong>"Transfer X Portfolio(s)"</strong> 버튼을 클릭하여 이관을 실행합니다.</p>
+
+            <div class="warning">
+                "Delete original (move)" 옵션을 선택하면 원본 포트폴리오가 영구 삭제됩니다.
+                신중하게 선택하세요.
+            </div>
+
+            <div class="tip">
+                이관 기록은 <strong>"View History"</strong> 버튼을 클릭하여 확인할 수 있습니다.
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="section">
+            <h2>자주 묻는 질문</h2>
+
+            <h3>Q: 학부모 계정을 검색할 수 없어요.</h3>
+            <p>A: 학부모가 먼저 Ownabee 앱에서 계정을 생성해야 합니다. 앱 설치 후 회원가입을 완료한 뒤 다시 시도해주세요.</p>
+
+            <h3>Q: 이관된 포트폴리오는 어디서 확인하나요?</h3>
+            <p>A: 학부모가 Ownabee 앱에 로그인하면 자녀의 포트폴리오 목록에서 확인할 수 있습니다.</p>
+
+            <h3>Q: 잘못 이관한 포트폴리오를 되돌릴 수 있나요?</h3>
+            <p>A: "Keep original (copy)" 옵션으로 이관한 경우 원본이 태블릿에 남아있습니다. "Delete original (move)" 옵션으로 이관한 경우 관리자에게 문의하세요.</p>
+        </div>
+
+        <footer>
+            <p>Ownabee Admin Portal Manual v1.0</p>
+            <p>문의: support@ownabee.com</p>
+        </footer>
+    </div>
+</body>
+</html>
