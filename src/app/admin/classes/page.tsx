@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { School, Plus, Pencil, Users, Building2 } from "lucide-react";
+import Link from "next/link";
+import { School, Plus, Pencil, Users, Building2, ChevronRight, Tablet } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -174,7 +175,7 @@ export default function AdminClassesPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {classes.map((cls) => (
-            <Card key={cls.id}>
+            <Card key={cls.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -218,6 +219,17 @@ export default function AdminClassesPage() {
                 <p className="mt-3 text-xs text-gray-400">
                   Created {formatDate(cls.createdAt)}
                 </p>
+
+                <Link
+                  href={`/admin/classes/${cls.id}`}
+                  className="mt-4 flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Tablet className="h-4 w-4" />
+                    <span>Manage Shared Tablets</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </Link>
               </CardContent>
             </Card>
           ))}

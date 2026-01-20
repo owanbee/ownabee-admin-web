@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.ownabee.com",
       },
+      {
+        protocol: "https",
+        hostname: "ownabee-public.s3.ap-northeast-2.amazonaws.com",
+      },
     ],
   },
 };

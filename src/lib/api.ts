@@ -18,6 +18,14 @@ import type {
   PortalUserInfo,
   UserSearchResult,
   ApiError,
+  SharedTabletAccount,
+  CreateSharedTabletPayload,
+  InstitutionParent,
+  CreateInstitutionParentPayload,
+  UpdateInstitutionParentPayload,
+  PortfolioTransfer,
+  TransferPortfoliosPayload,
+  TransferHistoryQuery,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -156,6 +164,13 @@ class ApiClient {
     return this.request<AuthResponse>("/auth/google/token", {
       method: "POST",
       body: JSON.stringify({ idToken }),
+    });
+  }
+
+  async loginWithPin(email: string, pinCode: string): Promise<AuthResponse> {
+    return this.request<AuthResponse>("/auth/admin/pin-login", {
+      method: "POST",
+      body: JSON.stringify({ email, pinCode }),
     });
   }
 
@@ -347,7 +362,7 @@ class ApiClient {
   }
 
   async updatePortfolio(id: string, formData: FormData): Promise<Portfolio> {
-    formData.append("id", id);
+    // id is already appended in PortfolioForm
     return this.request<Portfolio>("/portfolio", {
       method: "POST",
       body: formData,
@@ -358,6 +373,112 @@ class ApiClient {
     return this.request<void>(`/portfolio/${id}`, {
       method: "DELETE",
     });
+  }
+
+  // ========================================
+  // Admin: Shared Tablet APIs
+  // ========================================
+
+  async getSharedTablets(institutionId: string): Promise<SharedTabletAccount[]> {
+    return this.request<SharedTabletAccount[]>(`/admin/institutions/${institutionId}/shared-tablets`);
+  }
+
+  async createSharedTablet(institutionId: string, payload: CreateSharedTabletPayload): Promise<SharedTabletAccount> {
+    return this.request<SharedTabletAccount>(`/admin/institutions/${institutionId}/shared-tablets`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getSharedTablet(id: string): Promise<SharedTabletAccount> {
+    return this.request<SharedTabletAccount>(`/admin/shared-tablets/${id}`);
+  }
+
+  async deleteSharedTablet(id: string): Promise<void> {
+    return this.request<void>(`/admin/shared-tablets/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async updateTabletPin(id: string, pinCode: string): Promise<void> {
+    return this.request<void>(`/admin/shared-tablets/${id}/pin`, {
+      method: "PUT",
+      body: JSON.stringify({ pinCode }),
+    });
+  }
+
+  // ========================================
+  // Admin: Class Shared Tablet APIs
+  // ========================================
+
+  async getClassSharedTablets(classId: string): Promise<SharedTabletAccount[]> {
+    return this.request<SharedTabletAccount[]>(`/admin/classes/${classId}/shared-tablets`);
+  }
+
+  async createClassSharedTablet(classId: string, payload: CreateSharedTabletPayload): Promise<SharedTabletAccount> {
+    return this.request<SharedTabletAccount>(`/admin/classes/${classId}/shared-tablets`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // ========================================
+  // Admin: Institution Parent APIs
+  // ========================================
+
+  async getInstitutionParents(institutionId: string, search?: string): Promise<InstitutionParent[]> {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return this.request<InstitutionParent[]>(`/admin/institutions/${institutionId}/parents${query}`);
+  }
+
+  async createInstitutionParent(institutionId: string, payload: CreateInstitutionParentPayload): Promise<InstitutionParent> {
+    return this.request<InstitutionParent>(`/admin/institutions/${institutionId}/parents`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getInstitutionParent(id: string): Promise<InstitutionParent> {
+    return this.request<InstitutionParent>(`/admin/parents/${id}`);
+  }
+
+  async updateInstitutionParent(id: string, payload: UpdateInstitutionParentPayload): Promise<InstitutionParent> {
+    return this.request<InstitutionParent>(`/admin/parents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteInstitutionParent(id: string): Promise<void> {
+    return this.request<void>(`/admin/parents/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ========================================
+  // Portal: Transfer APIs
+  // ========================================
+
+  async getSharedProfilePortfolios(sharedTabletId: string): Promise<Portfolio[]> {
+    return this.request<Portfolio[]>(`/portal/shared-tablets/${sharedTabletId}/portfolios`);
+  }
+
+  async transferPortfolios(payload: TransferPortfoliosPayload): Promise<PortfolioTransfer[]> {
+    return this.request<PortfolioTransfer[]>("/portal/portfolios/transfer", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getTransferHistory(query?: TransferHistoryQuery): Promise<PortfolioTransfer[]> {
+    const params = new URLSearchParams();
+    if (query?.institutionId) params.append("institutionId", query.institutionId);
+    if (query?.startDate) params.append("startDate", query.startDate);
+    if (query?.endDate) params.append("endDate", query.endDate);
+    const queryStr = params.toString() ? `?${params.toString()}` : "";
+    return this.request<PortfolioTransfer[]>(`/portal/transfer-history${queryStr}`);
   }
 }
 

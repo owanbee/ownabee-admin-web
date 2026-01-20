@@ -8,9 +8,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@react-oauth/google": "^0.12.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -22,6 +27,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

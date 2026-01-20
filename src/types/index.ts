@@ -221,3 +221,100 @@ export interface ApiError {
   code?: string;
   status?: number;
 }
+
+// B2B: Shared Tablet Types
+export interface SharedTabletAccount {
+  id: string;
+  name: string;
+  loginId: string | null;
+  hasPinCode: boolean;
+  institutionId: string;
+  institution?: Institution;
+  userId: string;
+  user?: User;
+  profileId: string;
+  profile?: StudentProfile;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  _count?: {
+    portfolios: number;
+  };
+}
+
+export interface CreateSharedTabletPayload {
+  name: string;
+  loginId: string;
+  pinCode?: string;
+}
+
+export interface UpdateTabletPinPayload {
+  pinCode: string;
+}
+
+// B2B: Institution Parent Types
+export type InstitutionParentStatus = "REGISTERED" | "ACTIVE";
+
+export interface InstitutionParent {
+  id: string;
+  institutionId: string;
+  institution?: Institution;
+  userId: string;
+  user?: User;
+  childName: string;
+  phoneNumber: string | null;
+  memo: string | null;
+  status: InstitutionParentStatus;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  transfers?: PortfolioTransfer[];
+}
+
+export interface CreateInstitutionParentPayload {
+  userId: string;
+  childName: string;
+  phoneNumber?: string;
+  memo?: string;
+}
+
+export interface UpdateInstitutionParentPayload {
+  childName?: string;
+  phoneNumber?: string;
+  memo?: string;
+}
+
+// B2B: Portfolio Transfer Types
+export type TransferSourceAction = "KEEP" | "DELETE";
+
+export interface PortfolioTransfer {
+  id: string;
+  portfolioId: string;
+  portfolio?: Portfolio;
+  sourceProfileId: string;
+  sourceProfile?: StudentProfile;
+  targetProfileId: string;
+  targetProfile?: StudentProfile;
+  targetUserId: string;
+  targetUser?: User;
+  transferredBy: string;
+  transferredByUser?: User;
+  institutionParentId: string;
+  institutionParent?: InstitutionParent;
+  sourceAction: TransferSourceAction;
+  newPortfolioId: string | null;
+  createdAt: string;
+}
+
+export interface TransferPortfoliosPayload {
+  institutionParentId: string;
+  sourceProfileId: string;
+  portfolioIds: string[];
+  sourceAction: TransferSourceAction;
+}
+
+export interface TransferHistoryQuery {
+  institutionId?: string;
+  startDate?: string;
+  endDate?: string;
+}

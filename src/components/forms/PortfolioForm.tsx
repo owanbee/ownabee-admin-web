@@ -111,24 +111,34 @@ export function PortfolioForm({
 
     try {
       const formData = new FormData();
+      if (portfolioId) {
+        formData.append("id", portfolioId);
+      }
       formData.append("title", title);
       formData.append("profileId", profileId);
 
       if (coverImage) {
-        formData.append("coverImage", coverImage);
+        formData.append("cover", coverImage);
       }
 
-      // Add content items
+      // Build content array for backend API
+      const contentArray = contentItems.map((item, index) => ({
+        id: item.id.startsWith("new-") ? undefined : item.id,
+        type: item.type,
+        order: index,
+        name: item.title || undefined,
+        fileTempId: item.file ? `temp-${index}` : undefined,
+        fileUrl: item.url || undefined,
+        audioBookEditionId: item.audiobookId || undefined,
+        isNew: item.id.startsWith("new-") || !!item.file,
+      }));
+
+      formData.append("content", JSON.stringify(contentArray));
+
+      // Add files with matching temp IDs
       contentItems.forEach((item, index) => {
-        formData.append(`contentItems[${index}][type]`, item.type);
-        formData.append(`contentItems[${index}][title]`, item.title);
-
         if (item.file) {
-          formData.append(`contentItems[${index}][file]`, item.file);
-        }
-
-        if (item.audiobookId) {
-          formData.append(`contentItems[${index}][audiobookId]`, item.audiobookId);
+          formData.append(`file_temp-${index}`, item.file);
         }
       });
 

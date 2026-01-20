@@ -13,6 +13,9 @@ import {
   FolderOpen,
   Menu,
   X,
+  Tablet,
+  UserCheck,
+  ArrowRightLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useIsOperator } from "@/stores/authStore";
@@ -35,6 +38,10 @@ const adminNavItems: NavItem[] = [
   { href: "/admin/classes", label: "Manage Classes", icon: School, operatorOnly: true },
   { href: "/admin/student-codes", label: "Student Codes", icon: KeyRound, operatorOnly: true },
   { href: "/admin/members", label: "Members", icon: Users, operatorOnly: true },
+  // B2B Features
+  { href: "/admin/shared-tablets", label: "Shared Tablets", icon: Tablet, operatorOnly: true },
+  { href: "/admin/parents", label: "Parents", icon: UserCheck, operatorOnly: true },
+  { href: "/admin/transfers", label: "Transfers", icon: ArrowRightLeft, operatorOnly: true },
 ];
 
 export function Sidebar() {
