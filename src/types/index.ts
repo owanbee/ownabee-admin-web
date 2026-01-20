@@ -274,8 +274,8 @@ export interface InstitutionParent {
 export interface CreateInstitutionParentPayload {
   userId: string;
   childName: string;
-  phoneNumber?: string;
-  memo?: string;
+  phoneNumber?: string | undefined;
+  memo?: string | undefined;
 }
 
 export interface UpdateInstitutionParentPayload {
