@@ -195,7 +195,6 @@ export default function ParentsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by child name or parent email..."
-            icon={<Search className="h-4 w-4" />}
           />
         </div>
       </div>

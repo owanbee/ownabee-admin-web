@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowRightLeft, Tablet, UserCheck, FolderOpen, Check, History } from "lucide-react";
@@ -17,6 +18,14 @@ import { api } from "@/lib/api";
 import type { Institution, SharedTabletAccount, InstitutionParent, Portfolio, TransferSourceAction } from "@/types";
 
 export default function TransfersPage() {
+  return (
+    <Suspense fallback={<AdminLayout><LoadingPage message="Loading..." /></AdminLayout>}>
+      <TransfersPageContent />
+    </Suspense>
+  );
+}
+
+function TransfersPageContent() {
   const searchParams = useSearchParams();
   const preselectedTabletId = searchParams.get("tabletId");
 
@@ -44,8 +53,9 @@ export default function TransfersPage() {
       try {
         const data = await api.getInstitutions();
         setInstitutions(data);
-        if (data.length > 0) {
-          setSelectedInstitutionId(data[0].id);
+        const firstInstitution = data[0];
+        if (firstInstitution) {
+          setSelectedInstitutionId(firstInstitution.id);
         }
       } catch (err) {
         console.error("Failed to fetch institutions:", err);

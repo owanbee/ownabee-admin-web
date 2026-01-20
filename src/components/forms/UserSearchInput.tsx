@@ -120,13 +120,6 @@ export function UserSearchInput({
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={placeholder}
             disabled={disabled}
-            icon={
-              isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Mail className="h-4 w-4" />
-              )
-            }
             onFocus={() => {
               if (searchResults.length > 0) {
                 setIsDropdownOpen(true);
@@ -154,7 +147,7 @@ export function UserSearchInput({
                     ) : (
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
                         <span className="text-sm font-medium text-gray-600">
-                          {(user.name || user.email)[0].toUpperCase()}
+                          {(user.name || user.email)?.charAt(0).toUpperCase() || "?"}
                         </span>
                       </div>
                     )}

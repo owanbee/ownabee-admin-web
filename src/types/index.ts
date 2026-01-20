@@ -245,7 +245,7 @@ export interface SharedTabletAccount {
 export interface CreateSharedTabletPayload {
   name: string;
   loginId: string;
-  pinCode?: string;
+  pinCode?: string | undefined;
 }
 
 export interface UpdateTabletPinPayload {
@@ -314,7 +314,7 @@ export interface TransferPortfoliosPayload {
 }
 
 export interface TransferHistoryQuery {
-  institutionId?: string;
-  startDate?: string;
-  endDate?: string;
+  institutionId?: string | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
 }
