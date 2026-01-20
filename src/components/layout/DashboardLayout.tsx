@@ -13,11 +13,14 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
-  const { user, isLoading, isInitialized, initialize } = useAuthStore();
+  const { user, isLoading, isInitialized, initialize, _hasHydrated } = useAuthStore();
 
   React.useEffect(() => {
-    initialize();
-  }, [initialize]);
+    // Wait for Zustand to hydrate from localStorage before initializing
+    if (_hasHydrated) {
+      initialize();
+    }
+  }, [_hasHydrated, initialize]);
 
   React.useEffect(() => {
     if (isInitialized && !user) {
@@ -25,7 +28,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [isInitialized, user, router]);
 
-  if (!isInitialized || isLoading) {
+  // Wait for both hydration and initialization
+  if (!_hasHydrated || !isInitialized || isLoading) {
     return <LoadingPage message="Loading..." />;
   }
 

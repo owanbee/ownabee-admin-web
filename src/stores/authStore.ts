@@ -10,6 +10,7 @@ interface AuthState {
   refreshToken: string | null;
   isLoading: boolean;
   isInitialized: boolean;
+  _hasHydrated: boolean;
 
   // Actions
   setAuth: (user: User, tokens: AuthTokens) => void;
@@ -18,6 +19,7 @@ interface AuthState {
   logout: () => void;
   initialize: () => Promise<void>;
   fetchPortalInfo: () => Promise<void>;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,6 +31,11 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isLoading: false,
       isInitialized: false,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state });
+      },
 
       setAuth: (user, tokens) => {
         api.setTokens(tokens.accessToken, tokens.refreshToken);
@@ -68,18 +75,17 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
 
+        // Set up callbacks regardless of token state
+        api.setOnTokenRefresh((tokens) => {
+          get().updateTokens(tokens);
+        });
+
+        api.setOnAuthError(() => {
+          get().logout();
+        });
+
         if (accessToken && refreshToken) {
           api.setTokens(accessToken, refreshToken);
-
-          // Set up token refresh callback
-          api.setOnTokenRefresh((tokens) => {
-            get().updateTokens(tokens);
-          });
-
-          // Set up auth error callback
-          api.setOnAuthError(() => {
-            get().logout();
-          });
 
           try {
             // Fetch portal info to validate token and get user roles
@@ -132,6 +138,16 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Called after hydration is complete
+        if (state) {
+          state.setHasHydrated(true);
+          // Sync tokens to API client after hydration
+          if (state.accessToken && state.refreshToken) {
+            api.setTokens(state.accessToken, state.refreshToken);
+          }
+        }
+      },
     }
   )
 );
