@@ -5,12 +5,14 @@ Admin portal for managing institutions, classes, students, and portfolios in the
 ## Features
 
 ### Portfolio Management (All Users)
+
 - View accessible classes based on role
 - View students in each class
 - Create, edit, and delete student portfolios
 - Support for IMAGE, PDF, and AUDIOBOOK content types
 
 ### System Administration (Operators Only)
+
 - Institution CRUD operations
 - Class management across institutions
 - Student code generation (single and batch)
@@ -37,8 +39,6 @@ Admin portal for managing institutions, classes, students, and portfolios in the
 
 ```bash
 # Install dependencies
-npm install
-# or
 yarn install
 
 # Copy environment file
@@ -57,8 +57,6 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ### Development
 
 ```bash
-npm run dev
-# or
 yarn dev
 ```
 
@@ -67,20 +65,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### Production Build
 
 ```bash
-npm run build
-npm run start
-# or
 yarn build
 yarn start
 ```
 
 ## User Roles
 
-| Role | Access |
-|------|--------|
-| Operator | Full admin access + all portfolio management |
-| Institution Admin | All classes in institution + portfolio management |
-| Teacher | Assigned classes only + portfolio management for assigned students |
+| Role              | Access                                                             |
+| ----------------- | ------------------------------------------------------------------ |
+| Operator          | Full admin access + all portfolio management                       |
+| Institution Admin | All classes in institution + portfolio management                  |
+| Teacher           | Assigned classes only + portfolio management for assigned students |
 
 ## Project Structure
 
