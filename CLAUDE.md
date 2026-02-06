@@ -10,34 +10,28 @@ This is **Ownabee Admin Web** - a Next.js 14 admin portal for managing instituti
 
 ```bash
 # Install dependencies
-npm install
-# or
 yarn install
 
 # Development server
-npm run dev           # Start Next.js dev server on port 3000
-yarn dev              # Alternative with yarn
+yarn dev              # Start Next.js dev server on port 3000
 
 # Production build
-npm run build         # Build for production
-yarn build            # Alternative with yarn
+yarn build            # Build for production
 
 # Start production server
-npm run start         # Start production server
-yarn start            # Alternative with yarn
+yarn start            # Start production server
 
 # Linting
-npm run lint          # Run ESLint
-yarn lint             # Alternative with yarn
+yarn lint             # Run ESLint
 
 # Formatting
-npm run format        # Format code with Prettier
-yarn format           # Alternative with yarn
+yarn format           # Format code with Prettier
 ```
 
 ## Architecture
 
 ### Tech Stack
+
 - **Next.js 14** with App Router
 - **TypeScript** with strict mode
 - **Tailwind CSS** for styling
@@ -46,6 +40,7 @@ yarn format           # Alternative with yarn
 - **Lucide React** for icons
 
 ### Project Structure
+
 ```
 src/
 ├── app/                          # Next.js App Router pages
@@ -116,11 +111,13 @@ src/
 ### Backend API Integration
 
 The frontend connects to the backend API via environment variable:
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
 Key API endpoints used:
+
 - `/api/auth/google/token` - Google Sign-In
 - `/api/portal/*` - Portal APIs (classes, students, portfolios for non-operators)
 - `/api/admin/*` - Admin APIs (institutions, classes, members - operators only)
@@ -158,6 +155,6 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 
 1. Ensure backend is running on port 3001
 2. Copy `.env.local.example` to `.env.local` and fill in values
-3. Run `npm install` or `yarn install`
-4. Run `npm run dev` or `yarn dev`
+3. Run `yarn install`
+4. Run `yarn dev`
 5. Open http://localhost:3000
