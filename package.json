@@ -2,6 +2,9 @@
   "name": "ownabee-admin-web",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.18.0"
+  },
   "description": "Ownabee Admin Portal - Institution and Portfolio Management",
   "scripts": {
     "dev": "next dev",
@@ -20,7 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
-    "next": "^14.2.0",
+    "next": "14.2.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.5.0",

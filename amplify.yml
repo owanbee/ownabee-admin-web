@@ -1,0 +1,25 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # .nvmrc를 읽어 Node 20 최신 버전 설치
+        - nvm install
+        - nvm use
+        # Yarn 환경 최적화
+        - corepack enable
+        - yarn install --frozen-lockfile
+    build:
+      commands:
+        - yarn lint
+        - yarn build
+        - ls -al
+  artifacts:
+    # Next.js 14 SSR 앱을 위한 표준 아티팩트 경로
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
