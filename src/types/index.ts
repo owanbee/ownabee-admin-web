@@ -47,30 +47,32 @@ export interface AssignedClass {
 export interface Institution {
   id: string;
   name: string;
-  description: string | null;
+  memo: string | null;
   createdAt: string;
   updatedAt: string;
   _count?: {
-    classes: number;
+    institutionClasses: number;
     members: number;
+    students: number;
+    sharedTablets: number;
   };
 }
 
 export interface CreateInstitutionPayload {
   name: string;
-  description?: string;
+  memo?: string;
 }
 
 export interface UpdateInstitutionPayload {
   name?: string;
-  description?: string;
+  memo?: string;
 }
 
 // Class Types
 export interface InstitutionClass {
   id: string;
   name: string;
-  description: string | null;
+  memo: string | null;
   institutionId: string;
   institution?: Institution;
   createdAt: string;
@@ -78,18 +80,65 @@ export interface InstitutionClass {
   _count?: {
     students: number;
     teachers: number;
+    sharedTablets: number;
   };
 }
 
 export interface CreateClassPayload {
   name: string;
-  description?: string;
+  memo?: string;
   institutionId: string;
 }
 
 export interface UpdateClassPayload {
   name?: string;
-  description?: string;
+  memo?: string;
+}
+
+// Student Types
+export interface Student {
+  id: string;
+  userId: string;
+  username: string | null;
+  name: string;
+  studentNumber: string | null;
+  grade: string | null;
+  memo: string | null;
+  institutionId?: string;
+  institutionClassId?: string;
+  institutionClass?: {
+    id: string;
+    name: string;
+    institution: {
+      id: string;
+      name: string;
+    };
+  };
+  profiles?: StudentProfile[];
+  createdAt: string;
+  updatedAt?: string;
+  _count?: {
+    portfolios: number;
+  };
+}
+
+export interface CreateStudentPayload {
+  institutionId: string;
+  institutionClassId: string;
+  username: string;
+  password: string;
+  name: string;
+  studentNumber?: string;
+  grade?: string;
+  memo?: string;
+}
+
+export interface UpdateStudentPayload {
+  name?: string;
+  studentNumber?: string;
+  grade?: string;
+  memo?: string;
+  password?: string;
 }
 
 // Student Code Types
@@ -117,10 +166,14 @@ export interface BatchCreateStudentCodesPayload {
 }
 
 // Student Profile Types
+export type ProfileType = "B2C" | "B2B";
+
 export interface StudentProfile {
   id: string;
   name: string;
   picture: string | null;
+  type?: ProfileType;
+  institutionName?: string;
   createdAt: string;
   userId: string;
 }
@@ -145,7 +198,7 @@ export interface ClassTeacher {
   userId: string;
   classId: string;
   user: User;
-  assignedAt: string;
+  createdAt: string;
 }
 
 export interface AssignTeacherPayload {
@@ -223,98 +276,49 @@ export interface ApiError {
 }
 
 // B2B: Shared Tablet Types
-export interface SharedTabletAccount {
+export interface SharedTablet {
   id: string;
-  name: string;
-  loginId: string | null;
-  hasPinCode: boolean;
-  institutionId: string;
-  institution?: Institution;
   userId: string;
-  user?: User;
-  profileId: string;
-  profile?: StudentProfile;
+  username: string | null;
+  name: string;
+  institutionId: string;
+  institutionName?: string;
+  institutionClassId: string;
+  institutionClassName?: string;
+  memo: string | null;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  updatedAt?: string;
+}
+
+export interface CreateSharedTabletPayload {
+  institutionId: string;
+  institutionClassId: string;
+  name: string;
+  username: string;
+  password: string;
+  memo?: string;
+}
+
+export interface UpdateSharedTabletPayload {
+  name?: string;
+  memo?: string;
+  password?: string;
+}
+
+// Legacy type for backward compatibility
+export interface SharedTabletAccount extends SharedTablet {
+  loginId?: string | null;
+  hasPinCode?: boolean;
+  institution?: Institution;
+  user?: User;
+  profileId?: string;
+  profile?: StudentProfile;
+  deletedAt?: string | null;
   _count?: {
     portfolios: number;
   };
 }
 
-export interface CreateSharedTabletPayload {
-  name: string;
-  loginId: string;
-  pinCode?: string | undefined;
-}
-
 export interface UpdateTabletPinPayload {
   pinCode: string;
-}
-
-// B2B: Institution Parent Types
-export type InstitutionParentStatus = "REGISTERED" | "ACTIVE";
-
-export interface InstitutionParent {
-  id: string;
-  institutionId: string;
-  institution?: Institution;
-  userId: string;
-  user?: User;
-  childName: string;
-  phoneNumber: string | null;
-  memo: string | null;
-  status: InstitutionParentStatus;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  transfers?: PortfolioTransfer[];
-}
-
-export interface CreateInstitutionParentPayload {
-  userId: string;
-  childName: string;
-  phoneNumber?: string | undefined;
-  memo?: string | undefined;
-}
-
-export interface UpdateInstitutionParentPayload {
-  childName?: string;
-  phoneNumber?: string | undefined;
-  memo?: string | undefined;
-}
-
-// B2B: Portfolio Transfer Types
-export type TransferSourceAction = "KEEP" | "DELETE";
-
-export interface PortfolioTransfer {
-  id: string;
-  portfolioId: string;
-  portfolio?: Portfolio;
-  sourceProfileId: string;
-  sourceProfile?: StudentProfile;
-  targetProfileId: string;
-  targetProfile?: StudentProfile;
-  targetUserId: string;
-  targetUser?: User;
-  transferredBy: string;
-  transferredByUser?: User;
-  institutionParentId: string;
-  institutionParent?: InstitutionParent;
-  sourceAction: TransferSourceAction;
-  newPortfolioId: string | null;
-  createdAt: string;
-}
-
-export interface TransferPortfoliosPayload {
-  institutionParentId: string;
-  sourceProfileId: string;
-  portfolioIds: string[];
-  sourceAction: TransferSourceAction;
-}
-
-export interface TransferHistoryQuery {
-  institutionId?: string | undefined;
-  startDate?: string | undefined;
-  endDate?: string | undefined;
 }

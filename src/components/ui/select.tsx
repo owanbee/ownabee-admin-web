@@ -4,8 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
-export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: string;
   label?: string;
   options?: { value: string; label: string }[];
@@ -20,14 +19,11 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label
-            htmlFor={selectId}
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor={selectId} className="mb-1 block text-sm font-medium text-gray-700">
             {label}
           </label>
         )}
-        <div className="relative">
+        <div className="relative w-full">
           <select
             id={selectId}
             className={cn(
@@ -43,13 +39,17 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                 {placeholder}
               </option>
             )}
-            {children ? children : options?.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            {children
+              ? children
+              : options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          </div>
         </div>
         {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
       </div>

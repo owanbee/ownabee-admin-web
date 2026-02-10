@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Users,
   Building2,
@@ -43,38 +44,60 @@ import type {
 
 type TabType = "members" | "teachers";
 
-export default function MembersPage() {
-  const [activeTab, setActiveTab] = React.useState<TabType>("members");
-  const [institutions, setInstitutions] = React.useState<Institution[]>([]);
-  const [classes, setClasses] = React.useState<InstitutionClass[]>([]);
-  const [members, setMembers] = React.useState<InstitutionMember[]>([]);
-  const [teachers, setTeachers] = React.useState<ClassTeacher[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+function MembersPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabType>("members");
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [classes, setClasses] = useState<InstitutionClass[]>([]);
+  const [members, setMembers] = useState<InstitutionMember[]>([]);
+  const [teachers, setTeachers] = useState<ClassTeacher[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [selectedInstitutionId, setSelectedInstitutionId] = React.useState("");
-  const [selectedClassId, setSelectedClassId] = React.useState("");
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState("");
+
+  // Update query string when filters change
+  const handleInstitutionChange = (institutionId: string) => {
+    setSelectedInstitutionId(institutionId);
+    // Reset class when institution changes
+    setSelectedClassId("");
+
+    const params = new URLSearchParams();
+    if (institutionId) params.set("institutionId", institutionId);
+    router.push(`/admin/members?${params.toString()}`);
+  };
+
+  const handleClassChange = (classId: string) => {
+    setSelectedClassId(classId);
+
+    const params = new URLSearchParams();
+    if (selectedInstitutionId) params.set("institutionId", selectedInstitutionId);
+    if (classId) params.set("classId", classId);
+    router.push(`/admin/members?${params.toString()}`);
+  };
 
   // Add Member Modal
-  const [isAddMemberOpen, setIsAddMemberOpen] = React.useState(false);
-  const [searchEmail, setSearchEmail] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState<UserSearchResult[]>([]);
-  const [selectedUser, setSelectedUser] = React.useState<UserSearchResult | null>(null);
-  const [selectedRole, setSelectedRole] = React.useState<InstitutionRole>("TEACHER");
-  const [isSearching, setIsSearching] = React.useState(false);
-  const [isAdding, setIsAdding] = React.useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [selectedRole, setSelectedRole] = useState<InstitutionRole>("TEACHER");
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   // Assign Teacher Modal
-  const [isAssignTeacherOpen, setIsAssignTeacherOpen] = React.useState(false);
-  const [teacherSearchEmail, setTeacherSearchEmail] = React.useState("");
-  const [teacherSearchResults, setTeacherSearchResults] = React.useState<UserSearchResult[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = React.useState<UserSearchResult | null>(null);
-  const [isSearchingTeacher, setIsSearchingTeacher] = React.useState(false);
-  const [isAssigning, setIsAssigning] = React.useState(false);
+  const [isAssignTeacherOpen, setIsAssignTeacherOpen] = useState(false);
+  const [teacherSearchEmail, setTeacherSearchEmail] = useState("");
+  const [teacherSearchResults, setTeacherSearchResults] = useState<UserSearchResult[]>([]);
+  const [selectedTeacher, setSelectedTeacher] = useState<UserSearchResult | null>(null);
+  const [isSearchingTeacher, setIsSearchingTeacher] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   // Remove Modal
-  const [removeModal, setRemoveModal] = React.useState<{
+  const [removeModal, setRemoveModal] = useState<{
     open: boolean;
     type: "member" | "teacher";
     item: InstitutionMember | ClassTeacher | null;
@@ -86,37 +109,44 @@ export default function MembersPage() {
     isRemoving: false,
   });
 
-  const fetchInitialData = React.useCallback(async () => {
-    try {
-      const [institutionsData, classesData] = await Promise.all([
-        api.getInstitutions(),
-        api.getClasses(),
-      ]);
-      setInstitutions(institutionsData);
-      setClasses(classesData);
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // Get URL params first
+        const institutionIdParam = searchParams.get("institutionId");
+        const classIdParam = searchParams.get("classId");
 
-      if (institutionsData.length > 0 && institutionsData[0]) {
-        setSelectedInstitutionId(institutionsData[0].id);
-      }
-      if (classesData.length > 0 && classesData[0]) {
-        setSelectedClassId(classesData[0].id);
-      }
-    } catch (err) {
-      console.error("Failed to fetch initial data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        const [institutionsData, classesData] = await Promise.all([
+          api.getInstitutions(),
+          api.getClasses(),
+        ]);
+        setInstitutions(institutionsData);
+        setClasses(classesData);
 
-  React.useEffect(() => {
+        // Set from URL params only
+        if (institutionIdParam) {
+          setSelectedInstitutionId(institutionIdParam);
+        }
+
+        if (classIdParam) {
+          setSelectedClassId(classIdParam);
+        }
+      } catch (err) {
+        console.error("Failed to fetch initial data:", err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchInitialData();
-  }, [fetchInitialData]);
+  }, [searchParams]);
 
   // Fetch members when institution changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedInstitutionId && activeTab === "members") {
-      api.getInstitutionMembers(selectedInstitutionId)
+      api
+        .getInstitutionMembers(selectedInstitutionId)
         .then(setMembers)
         .catch((err) => {
           console.error("Failed to fetch members:", err);
@@ -125,9 +155,10 @@ export default function MembersPage() {
   }, [selectedInstitutionId, activeTab]);
 
   // Fetch teachers when class changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedClassId && activeTab === "teachers") {
-      api.getClassTeachers(selectedClassId)
+      api
+        .getClassTeachers(selectedClassId)
         .then(setTeachers)
         .catch((err) => {
           console.error("Failed to fetch teachers:", err);
@@ -261,11 +292,7 @@ export default function MembersPage() {
         ]}
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Tabs */}
       <div className="mb-6 flex gap-2 border-b">
@@ -297,21 +324,21 @@ export default function MembersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
-              <CardTitle>Institution Members</CardTitle>
+              <CardTitle className="whitespace-nowrap">Institution Members</CardTitle>
               <Select
-                options={institutions.map((inst) => ({
-                  value: inst.id,
-                  label: inst.name,
-                }))}
+                options={[
+                  { value: "", label: "Select Institution" },
+                  ...institutions.map((inst) => ({
+                    value: inst.id,
+                    label: inst.name,
+                  })),
+                ]}
                 value={selectedInstitutionId}
-                onChange={(e) => setSelectedInstitutionId(e.target.value)}
+                onChange={(e) => handleInstitutionChange(e.target.value)}
                 className="w-48"
               />
             </div>
-            <Button
-              onClick={() => setIsAddMemberOpen(true)}
-              disabled={!selectedInstitutionId}
-            >
+            <Button onClick={() => setIsAddMemberOpen(true)} disabled={!selectedInstitutionId}>
               <Plus className="mr-2 h-4 w-4" />
               Add Member
             </Button>
@@ -347,28 +374,16 @@ export default function MembersPage() {
                     <TableRow key={member.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar
-                            src={member.user.picture}
-                            name={member.user.name}
-                            size="sm"
-                          />
+                          <Avatar src={member.user.picture} name={member.user.name} size="sm" />
                           <div>
-                            <p className="font-medium">
-                              {member.user.name || member.user.email}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {member.user.email}
-                            </p>
+                            <p className="font-medium">{member.user.name || member.user.email}</p>
+                            <p className="text-sm text-gray-500">{member.user.email}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            member.role === "INSTITUTION_ADMIN"
-                              ? "default"
-                              : "secondary"
-                          }
+                          variant={member.role === "INSTITUTION_ADMIN" ? "default" : "secondary"}
                         >
                           {getRoleDisplayName(member.role)}
                         </Badge>
@@ -404,20 +419,39 @@ export default function MembersPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <CardTitle>Class Teachers</CardTitle>
-              <Select
-                options={filteredClasses.map((cls) => ({
-                  value: cls.id,
-                  label: `${cls.name} (${cls.institution?.name || "Unknown"})`,
-                }))}
-                value={selectedClassId}
-                onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-64"
-              />
+              <div className="flex gap-2">
+                <Select
+                  options={[
+                    { value: "", label: "Select Institution" },
+                    ...institutions.map((inst) => ({
+                      value: inst.id,
+                      label: inst.name,
+                    })),
+                  ]}
+                  value={selectedInstitutionId}
+                  onChange={(e) => handleInstitutionChange(e.target.value)}
+                  className="w-48"
+                />
+                <Select
+                  options={
+                    selectedInstitutionId && filteredClasses.length === 0
+                      ? [{ value: "", label: "No classes available" }]
+                      : [
+                          { value: "", label: "Select Class" },
+                          ...filteredClasses.map((cls) => ({
+                            value: cls.id,
+                            label: cls.name,
+                          })),
+                        ]
+                  }
+                  value={selectedClassId}
+                  onChange={(e) => handleClassChange(e.target.value)}
+                  className="w-48"
+                  disabled={!selectedInstitutionId}
+                />
+              </div>
             </div>
-            <Button
-              onClick={() => setIsAssignTeacherOpen(true)}
-              disabled={!selectedClassId}
-            >
+            <Button onClick={() => setIsAssignTeacherOpen(true)} disabled={!selectedClassId}>
               <UserPlus className="mr-2 h-4 w-4" />
               Assign Teacher
             </Button>
@@ -429,10 +463,7 @@ export default function MembersPage() {
                 title="No teachers assigned"
                 description="Assign teachers to this class to let them manage student portfolios."
                 action={
-                  <Button
-                    onClick={() => setIsAssignTeacherOpen(true)}
-                    disabled={!selectedClassId}
-                  >
+                  <Button onClick={() => setIsAssignTeacherOpen(true)} disabled={!selectedClassId}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     Assign Teacher
                   </Button>
@@ -452,22 +483,14 @@ export default function MembersPage() {
                     <TableRow key={teacher.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar
-                            src={teacher.user.picture}
-                            name={teacher.user.name}
-                            size="sm"
-                          />
+                          <Avatar src={teacher.user.picture} name={teacher.user.name} size="sm" />
                           <div>
-                            <p className="font-medium">
-                              {teacher.user.name || teacher.user.email}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {teacher.user.email}
-                            </p>
+                            <p className="font-medium">{teacher.user.name || teacher.user.email}</p>
+                            <p className="text-sm text-gray-500">{teacher.user.email}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{formatDate(teacher.assignedAt)}</TableCell>
+                      <TableCell>{formatDate(teacher.createdAt)}</TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -552,11 +575,7 @@ export default function MembersPage() {
             <Button variant="outline" onClick={handleCloseAddMember}>
               Cancel
             </Button>
-            <Button
-              onClick={handleAddMember}
-              disabled={!selectedUser}
-              isLoading={isAdding}
-            >
+            <Button onClick={handleAddMember} disabled={!selectedUser} isLoading={isAdding}>
               Add Member
             </Button>
           </div>
@@ -639,5 +658,19 @@ export default function MembersPage() {
         isLoading={removeModal.isRemoving}
       />
     </AdminLayout>
+  );
+}
+
+export default function MembersPage() {
+  return (
+    <Suspense
+      fallback={
+        <AdminLayout>
+          <LoadingPage message="Loading..." />
+        </AdminLayout>
+      }
+    >
+      <MembersPageContent />
+    </Suspense>
   );
 }

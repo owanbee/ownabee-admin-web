@@ -1,14 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Building2,
   GraduationCap,
   Users,
-  Pencil,
-  Plus,
   Trash2,
+  UserCircle,
+  Tablet,
+  ExternalLink,
+  School,
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -16,17 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Modal, ConfirmModal } from "@/components/ui/modal";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
@@ -35,50 +28,42 @@ import type {
   Institution,
   InstitutionClass,
   InstitutionMember,
-  UserSearchResult,
-  InstitutionRole,
+  Student,
+  SharedTablet,
 } from "@/types";
 
 export default function InstitutionDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const institutionId = params.id as string;
 
   const [institution, setInstitution] = React.useState<Institution | null>(null);
   const [classes, setClasses] = React.useState<InstitutionClass[]>([]);
   const [members, setMembers] = React.useState<InstitutionMember[]>([]);
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [sharedTablets, setSharedTablets] = React.useState<SharedTablet[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Add Member Modal
-  const [isAddMemberOpen, setIsAddMemberOpen] = React.useState(false);
-  const [searchEmail, setSearchEmail] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState<UserSearchResult[]>([]);
-  const [selectedUser, setSelectedUser] = React.useState<UserSearchResult | null>(null);
-  const [selectedRole, setSelectedRole] = React.useState<InstitutionRole>("TEACHER");
-  const [isSearching, setIsSearching] = React.useState(false);
-  const [isAddingMember, setIsAddingMember] = React.useState(false);
-
-  // Remove Member Modal
-  const [removeMemberModal, setRemoveMemberModal] = React.useState<{
-    open: boolean;
-    member: InstitutionMember | null;
-    isRemoving: boolean;
-  }>({
-    open: false,
-    member: null,
-    isRemoving: false,
-  });
+  // Delete institution confirmation
+  const [isDeleteInstitutionModalOpen, setIsDeleteInstitutionModalOpen] = React.useState(false);
+  const [isDeletingInstitution, setIsDeletingInstitution] = React.useState(false);
 
   const fetchData = React.useCallback(async () => {
     try {
-      const [institutionData, classesData, membersData] = await Promise.all([
-        api.getInstitution(institutionId),
-        api.getClasses(institutionId),
-        api.getInstitutionMembers(institutionId),
-      ]);
+      const [institutionData, classesData, membersData, studentsData, tabletsData] =
+        await Promise.all([
+          api.getInstitution(institutionId),
+          api.getClasses(institutionId),
+          api.getInstitutionMembers(institutionId),
+          api.getStudents({ institutionId }),
+          api.getSharedTablets({ institutionId }),
+        ]);
       setInstitution(institutionData);
       setClasses(classesData);
       setMembers(membersData);
+      setStudents(studentsData.students);
+      setSharedTablets(tabletsData.tablets);
     } catch (err) {
       console.error("Failed to fetch institution data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -91,61 +76,23 @@ export default function InstitutionDetailPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleSearchUser = async () => {
-    if (!searchEmail.trim()) return;
+  const handleDeleteInstitution = async () => {
+    setIsDeletingInstitution(true);
+    setError(null);
 
-    setIsSearching(true);
     try {
-      const results = await api.searchUserByEmail(searchEmail);
-      setSearchResults(results);
+      await api.deleteInstitution(institutionId);
+      router.push("/admin/institutions");
     } catch (err) {
-      console.error("Failed to search user:", err);
-    } finally {
-      setIsSearching(false);
+      console.error("Failed to delete institution:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete institution");
+      setIsDeletingInstitution(false);
+      setIsDeleteInstitutionModalOpen(false);
     }
   };
 
-  const handleAddMember = async () => {
-    if (!selectedUser) return;
-
-    setIsAddingMember(true);
-    try {
-      const newMember = await api.addInstitutionMember(institutionId, {
-        userId: selectedUser.id,
-        role: selectedRole,
-      });
-      setMembers((prev) => [...prev, newMember]);
-      setIsAddMemberOpen(false);
-      setSearchEmail("");
-      setSearchResults([]);
-      setSelectedUser(null);
-    } catch (err) {
-      console.error("Failed to add member:", err);
-      setError(err instanceof Error ? err.message : "Failed to add member");
-    } finally {
-      setIsAddingMember(false);
-    }
-  };
-
-  const handleRemoveMember = async () => {
-    if (!removeMemberModal.member) return;
-
-    setRemoveMemberModal((prev) => ({ ...prev, isRemoving: true }));
-    try {
-      await api.removeInstitutionMember(
-        institutionId,
-        removeMemberModal.member.userId
-      );
-      setMembers((prev) =>
-        prev.filter((m) => m.userId !== removeMemberModal.member?.userId)
-      );
-      setRemoveMemberModal({ open: false, member: null, isRemoving: false });
-    } catch (err) {
-      console.error("Failed to remove member:", err);
-      setError(err instanceof Error ? err.message : "Failed to remove member");
-      setRemoveMemberModal((prev) => ({ ...prev, isRemoving: false }));
-    }
-  };
+  const canDeleteInstitution =
+    classes.length === 0 && students.length === 0 && sharedTablets.length === 0;
 
   if (isLoading) {
     return (
@@ -158,9 +105,7 @@ export default function InstitutionDetailPage() {
   if (!institution) {
     return (
       <AdminLayout>
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-          Institution not found
-        </div>
+        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">Institution not found</div>
       </AdminLayout>
     );
   }
@@ -169,30 +114,38 @@ export default function InstitutionDetailPage() {
     <AdminLayout>
       <PageHeader
         title={institution.name}
-        description={institution.description || "No description"}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Admin" },
           { label: "Institutions", href: "/admin/institutions" },
           { label: institution.name },
         ]}
+        action={
+          canDeleteInstitution && (
+            <Button variant="destructive" onClick={() => setIsDeleteInstitutionModalOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Institution
+            </Button>
+          )
+        }
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Classes Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
+              <School className="h-5 w-5" />
               Classes
             </CardTitle>
-            <Badge variant="secondary">{classes.length} total</Badge>
+            <Link href={`/admin/classes?institutionId=${institutionId}`}>
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Classes
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {classes.length === 0 ? (
@@ -209,20 +162,110 @@ export default function InstitutionDetailPage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900">{cls.name}</p>
-                      {cls.description && (
-                        <p className="text-sm text-gray-500 line-clamp-1">
-                          {cls.description}
-                        </p>
-                      )}
+                      {cls.memo && <p className="text-sm text-gray-500 line-clamp-1">{cls.memo}</p>}
                     </div>
-                    <Badge variant="secondary">
-                      {cls._count?.students || 0} students
-                    </Badge>
+                    <Badge variant="secondary">{cls._count?.students || 0} students</Badge>
                   </div>
                 ))}
                 {classes.length > 5 && (
                   <p className="text-center text-sm text-gray-500">
                     +{classes.length - 5} more classes
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Students Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5" />
+              Students
+            </CardTitle>
+            <Link href={`/admin/students?institutionId=${institutionId}`}>
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Students
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {students.length === 0 ? (
+              <EmptyState
+                title="No students"
+                description="No students have been created for this institution yet."
+              />
+            ) : (
+              <div className="space-y-3">
+                {students.slice(0, 5).map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{student.name}</p>
+                      {student.institutionClass && (
+                        <p className="text-sm text-gray-500">{student.institutionClass.name}</p>
+                      )}
+                    </div>
+                    {student.grade && <Badge variant="secondary">{student.grade}</Badge>}
+                  </div>
+                ))}
+                {students.length > 5 && (
+                  <p className="text-center text-sm text-gray-500">
+                    +{students.length - 5} more students
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Shared Tablets Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Tablet className="h-5 w-5" />
+              Shared Tablets
+            </CardTitle>
+            <Link href={`/admin/shared-tablets?institutionId=${institutionId}`}>
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Tablets
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {sharedTablets.length === 0 ? (
+              <EmptyState
+                title="No shared tablets"
+                description="No shared tablets have been created for this institution yet."
+              />
+            ) : (
+              <div className="space-y-3">
+                {sharedTablets.slice(0, 5).map((tablet) => (
+                  <div
+                    key={tablet.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{tablet.name}</p>
+                      {tablet.institutionClassName && (
+                        <p className="text-sm text-gray-500">{tablet.institutionClassName}</p>
+                      )}
+                    </div>
+                    {tablet.username && (
+                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        @{tablet.username}
+                      </code>
+                    )}
+                  </div>
+                ))}
+                {sharedTablets.length > 5 && (
+                  <p className="text-center text-sm text-gray-500">
+                    +{sharedTablets.length - 5} more tablets
                   </p>
                 )}
               </div>
@@ -237,185 +280,80 @@ export default function InstitutionDetailPage() {
               <Users className="h-5 w-5" />
               Members
             </CardTitle>
-            <Button size="sm" onClick={() => setIsAddMemberOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Member
-            </Button>
+            <Link href={`/admin/members?institutionId=${institutionId}`}>
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Members
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {members.length === 0 ? (
               <EmptyState
                 title="No members"
-                description="No members have been added to this institution yet."
-                action={
-                  <Button size="sm" onClick={() => setIsAddMemberOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Member
-                  </Button>
-                }
+                description="Go to Members menu to add admins and teachers for this institution."
               />
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="w-10"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {members.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            src={member.user.picture}
-                            name={member.user.name}
-                            size="sm"
-                          />
-                          <div>
-                            <p className="font-medium">
-                              {member.user.name || member.user.email}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {member.user.email}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            member.role === "INSTITUTION_ADMIN"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {getRoleDisplayName(member.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            setRemoveMemberModal({
-                              open: true,
-                              member,
-                              isRemoving: false,
-                            })
-                          }
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-3">
+                {members.slice(0, 5).map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar src={member.user.picture} name={member.user.name} size="sm" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {member.user.name || member.user.email}
+                        </p>
+                        <p className="text-sm text-gray-500">{member.user.email}</p>
+                      </div>
+                    </div>
+                    <Badge variant={member.role === "INSTITUTION_ADMIN" ? "default" : "secondary"}>
+                      {getRoleDisplayName(member.role)}
+                    </Badge>
+                  </div>
+                ))}
+                {members.length > 5 && (
+                  <p className="text-center text-sm text-gray-500">
+                    +{members.length - 5} more members
+                  </p>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Add Member Modal */}
+      {/* Delete Institution Confirmation Modal */}
       <Modal
-        open={isAddMemberOpen}
-        onClose={() => {
-          setIsAddMemberOpen(false);
-          setSearchEmail("");
-          setSearchResults([]);
-          setSelectedUser(null);
-        }}
-        title="Add Member"
-        description="Search for a user by email to add them to this institution."
+        open={isDeleteInstitutionModalOpen}
+        onClose={() => setIsDeleteInstitutionModalOpen(false)}
+        title="Delete Institution"
       >
         <div className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Enter email address"
-              value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchUser()}
-            />
-            <Button onClick={handleSearchUser} isLoading={isSearching}>
-              Search
-            </Button>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Search Results</p>
-              {searchResults.map((user) => (
-                <div
-                  key={user.id}
-                  onClick={() => setSelectedUser(user)}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                    selectedUser?.id === user.id
-                      ? "border-primary-500 bg-primary-50"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  <Avatar src={user.picture} name={user.name} size="sm" />
-                  <div>
-                    <p className="font-medium">{user.name || "No name"}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {selectedUser && (
-            <Select
-              label="Role"
-              options={[
-                { value: "INSTITUTION_ADMIN", label: "Institution Admin" },
-                { value: "TEACHER", label: "Teacher" },
-              ]}
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value as InstitutionRole)}
-            />
-          )}
-
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete <strong>{institution.name}</strong>? This action cannot
+            be undone.
+          </p>
           <div className="flex justify-end gap-3">
             <Button
+              type="button"
               variant="outline"
-              onClick={() => {
-                setIsAddMemberOpen(false);
-                setSearchEmail("");
-                setSearchResults([]);
-                setSelectedUser(null);
-              }}
+              onClick={() => setIsDeleteInstitutionModalOpen(false)}
             >
               Cancel
             </Button>
             <Button
-              onClick={handleAddMember}
-              disabled={!selectedUser}
-              isLoading={isAddingMember}
+              variant="destructive"
+              onClick={handleDeleteInstitution}
+              isLoading={isDeletingInstitution}
             >
-              Add Member
+              Delete Institution
             </Button>
           </div>
         </div>
       </Modal>
-
-      {/* Remove Member Confirmation */}
-      <ConfirmModal
-        open={removeMemberModal.open}
-        onClose={() =>
-          setRemoveMemberModal({ open: false, member: null, isRemoving: false })
-        }
-        onConfirm={handleRemoveMember}
-        title="Remove Member"
-        description={`Are you sure you want to remove ${
-          removeMemberModal.member?.user.name || removeMemberModal.member?.user.email
-        } from this institution? They will lose access to all classes.`}
-        confirmText="Remove"
-        isDestructive
-        isLoading={removeMemberModal.isRemoving}
-      />
     </AdminLayout>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { School, Plus, Pencil, Users, Building2, ChevronRight, Tablet } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { School, Plus, Pencil, Building2, Tablet, UserCheck, UserCircle } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
@@ -18,26 +18,35 @@ import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import type { InstitutionClass, Institution } from "@/types";
 
-export default function AdminClassesPage() {
-  const [classes, setClasses] = React.useState<InstitutionClass[]>([]);
-  const [institutions, setInstitutions] = React.useState<Institution[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+function AdminClassesPageContent() {
+  const searchParams = useSearchParams();
+  const [classes, setClasses] = useState<InstitutionClass[]>([]);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filter
-  const [filterInstitutionId, setFilterInstitutionId] = React.useState("");
+  const [filterInstitutionId, setFilterInstitutionId] = useState("");
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    const institutionId = searchParams.get("institutionId");
+    if (institutionId) {
+      setFilterInstitutionId(institutionId);
+    }
+  }, [searchParams]);
 
   // Modal state
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [editingClass, setEditingClass] = React.useState<InstitutionClass | null>(null);
-  const [formData, setFormData] = React.useState({
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<InstitutionClass | null>(null);
+  const [formData, setFormData] = useState({
     name: "",
-    description: "",
+    memo: "",
     institutionId: "",
   });
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchData = React.useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [classesData, institutionsData] = await Promise.all([
         api.getClasses(filterInstitutionId || undefined),
@@ -53,7 +62,7 @@ export default function AdminClassesPage() {
     }
   }, [filterInstitutionId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchData();
   }, [fetchData]);
 
@@ -62,14 +71,14 @@ export default function AdminClassesPage() {
       setEditingClass(cls);
       setFormData({
         name: cls.name,
-        description: cls.description || "",
+        memo: cls.memo || "",
         institutionId: cls.institutionId,
       });
     } else {
       setEditingClass(null);
       setFormData({
         name: "",
-        description: "",
+        memo: "",
         institutionId: filterInstitutionId || institutions[0]?.id || "",
       });
     }
@@ -79,7 +88,7 @@ export default function AdminClassesPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingClass(null);
-    setFormData({ name: "", description: "", institutionId: "" });
+    setFormData({ name: "", memo: "", institutionId: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,11 +100,9 @@ export default function AdminClassesPage() {
       if (editingClass) {
         const updated = await api.updateClass(editingClass.id, {
           name: formData.name,
-          description: formData.description,
+          memo: formData.memo,
         });
-        setClasses((prev) =>
-          prev.map((cls) => (cls.id === updated.id ? updated : cls))
-        );
+        setClasses((prev) => prev.map((cls) => (cls.id === updated.id ? updated : cls)));
       } else {
         const created = await api.createClass(formData);
         setClasses((prev) => [...prev, created]);
@@ -140,14 +147,10 @@ export default function AdminClassesPage() {
         }
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Filter */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col gap-2 max-w-xs">
         <Select
           options={institutionOptions}
           value={filterInstitutionId}
@@ -185,51 +188,41 @@ export default function AdminClassesPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900">{cls.name}</h3>
                       {cls.institution && (
-                        <p className="text-sm text-gray-500">
-                          {cls.institution.name}
-                        </p>
+                        <p className="text-sm text-gray-500">{cls.institution.name}</p>
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenModal(cls)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenModal(cls)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {cls.description && (
-                  <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                    {cls.description}
-                  </p>
-                )}
+                {cls.memo && <p className="mt-3 text-sm text-gray-600 line-clamp-2">{cls.memo}</p>}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge variant="secondary">
-                    <Users className="mr-1 h-3 w-3" />
+                    <UserCircle className="mr-1 h-3 w-3" />
                     {cls._count?.students || 0} students
                   </Badge>
                   <Badge variant="secondary">
+                    <Tablet className="mr-1 h-3 w-3" />
+                    {cls._count?.sharedTablets || 0} tablets
+                  </Badge>
+                  <Badge variant="secondary">
+                    <UserCheck className="mr-1 h-3 w-3" />
                     {cls._count?.teachers || 0} teachers
                   </Badge>
                 </div>
 
-                <p className="mt-3 text-xs text-gray-400">
-                  Created {formatDate(cls.createdAt)}
-                </p>
+                <p className="mt-3 text-xs text-gray-400">Created {formatDate(cls.createdAt)}</p>
 
-                <Link
-                  href={`/admin/classes/${cls.id}`}
-                  className="mt-4 flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Tablet className="h-4 w-4" />
-                    <span>Manage Shared Tablets</span>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                </Link>
+                <div className="mt-4">
+                  <Link href={`/admin/classes/${cls.id}`}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      View Details
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -251,29 +244,22 @@ export default function AdminClassesPage() {
                 label: inst.name,
               }))}
               value={formData.institutionId}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, institutionId: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, institutionId: e.target.value }))}
               required
             />
           )}
           <Input
             label="Name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             placeholder="Enter class name"
             required
           />
-          <Textarea
-            label="Description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Enter description (optional)"
-            rows={3}
+          <Input
+            label="Memo"
+            value={formData.memo}
+            onChange={(e) => setFormData((prev) => ({ ...prev, memo: e.target.value }))}
+            placeholder="Enter memo (optional)"
           />
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCloseModal}>
@@ -286,5 +272,19 @@ export default function AdminClassesPage() {
         </form>
       </Modal>
     </AdminLayout>
+  );
+}
+
+export default function AdminClassesPage() {
+  return (
+    <Suspense
+      fallback={
+        <AdminLayout>
+          <LoadingPage message="Loading classes..." />
+        </AdminLayout>
+      }
+    >
+      <AdminClassesPageContent />
+    </Suspense>
   );
 }

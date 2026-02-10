@@ -2,19 +2,37 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { School, Plus, Trash2, Tablet, Users, Key, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import {
+  School,
+  Tablet,
+  ArrowLeft,
+  UserCircle,
+  UserCheck,
+  ExternalLink,
+  Trash2,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
-import type { InstitutionClass, SharedTabletAccount } from "@/types";
+import type { InstitutionClass, SharedTablet, Student, ClassTeacher } from "@/types";
 
 export default function ClassDetailPage() {
   const params = useParams();
@@ -22,32 +40,31 @@ export default function ClassDetailPage() {
   const classId = params.classId as string;
 
   const [classData, setClassData] = React.useState<InstitutionClass | null>(null);
-  const [sharedTablets, setSharedTablets] = React.useState<SharedTabletAccount[]>([]);
+  const [sharedTablets, setSharedTablets] = React.useState<SharedTablet[]>([]);
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [teachers, setTeachers] = React.useState<ClassTeacher[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({
-    name: "",
-    loginId: "",
-    pinCode: "",
-  });
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  // Delete confirmation
-  const [deleteTarget, setDeleteTarget] = React.useState<SharedTabletAccount | null>(null);
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  // Delete class confirmation
+  const [isDeleteClassModalOpen, setIsDeleteClassModalOpen] = React.useState(false);
+  const [isDeletingClass, setIsDeletingClass] = React.useState(false);
 
   const fetchData = React.useCallback(async () => {
     try {
       setIsLoading(true);
-      const [classInfo, tablets] = await Promise.all([
-        api.getClass(classId),
-        api.getClassSharedTablets(classId),
-      ]);
+      const classInfo = await api.getClass(classId);
       setClassData(classInfo);
-      setSharedTablets(tablets);
+
+      // Fetch related data for this class
+      const [tabletsData, studentsData, teachersData] = await Promise.all([
+        api.getSharedTablets({ institutionClassId: classId }),
+        api.getStudents({ institutionClassId: classId }),
+        api.getClassTeachers(classId),
+      ]);
+      setSharedTablets(tabletsData.tablets);
+      setStudents(studentsData.students);
+      setTeachers(teachersData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -60,55 +77,22 @@ export default function ClassDetailPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleOpenModal = () => {
-    setFormData({ name: "", loginId: "", pinCode: "" });
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setFormData({ name: "", loginId: "", pinCode: "" });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleDeleteClass = async () => {
+    setIsDeletingClass(true);
     setError(null);
 
     try {
-      const payload: { name: string; loginId: string; pinCode?: string } = {
-        name: formData.name,
-        loginId: formData.loginId,
-      };
-      if (formData.pinCode) {
-        payload.pinCode = formData.pinCode;
-      }
-      const created = await api.createClassSharedTablet(classId, payload);
-      setSharedTablets((prev) => [created, ...prev]);
-      handleCloseModal();
+      await api.deleteClass(classId);
+      router.push("/admin/classes");
     } catch (err: any) {
-      console.error("Failed to create shared tablet:", err);
-      setError(err.message || "Failed to create shared tablet");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Failed to delete class:", err);
+      setError(err.message || "Failed to delete class");
+      setIsDeletingClass(false);
+      setIsDeleteClassModalOpen(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setIsDeleting(true);
-
-    try {
-      await api.deleteSharedTablet(deleteTarget.id);
-      setSharedTablets((prev) => prev.filter((t) => t.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    } catch (err: any) {
-      console.error("Failed to delete shared tablet:", err);
-      setError(err.message || "Failed to delete shared tablet");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const canDeleteClass = students.length === 0 && sharedTablets.length === 0;
 
   if (isLoading) {
     return (
@@ -140,7 +124,6 @@ export default function ClassDetailPage() {
     <AdminLayout>
       <PageHeader
         title={classData.name}
-        description={classData.description || `Manage shared tablets for ${classData.name}`}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Admin" },
@@ -148,20 +131,25 @@ export default function ClassDetailPage() {
           { label: classData.name },
         ]}
         action={
-          <Button variant="outline" onClick={() => router.push("/admin/classes")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+          <div className="flex gap-2">
+            {canDeleteClass && (
+              <Button variant="destructive" onClick={() => setIsDeleteClassModalOpen(true)}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Class
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.push("/admin/classes")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </div>
         }
       />
 
       {error && (
         <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
           {error}
-          <button
-            onClick={() => setError(null)}
-            className="ml-2 text-red-800 underline"
-          >
+          <button onClick={() => setError(null)} className="ml-2 text-red-800 underline">
             Dismiss
           </button>
         </div>
@@ -182,17 +170,104 @@ export default function ClassDetailPage() {
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary">
-                <Users className="mr-1 h-3 w-3" />
-                {classData._count?.students || 0} students
+                <UserCircle className="mr-1 h-3 w-3" />
+                {students.length} students
               </Badge>
               <Badge variant="secondary">
                 <Tablet className="mr-1 h-3 w-3" />
                 {sharedTablets.length} tablets
               </Badge>
+              <Badge variant="secondary">
+                <UserCheck className="mr-1 h-3 w-3" />
+                {teachers.length} teachers
+              </Badge>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2 mb-6">
+        {/* Students Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5" />
+              Students
+            </CardTitle>
+            <Link href={`/admin/students?institutionId=${classData.institution?.id}&classId=${classId}`}>
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Students
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {students.length === 0 ? (
+              <EmptyState
+                title="No students"
+                description="No students have been added to this class yet."
+              />
+            ) : (
+              <div className="space-y-3">
+                {students.slice(0, 5).map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{student.name}</p>
+                      {student.studentNumber && (
+                        <p className="text-sm text-gray-500">#{student.studentNumber}</p>
+                      )}
+                    </div>
+                    {student.grade && <Badge variant="secondary">{student.grade}</Badge>}
+                  </div>
+                ))}
+                {students.length > 5 && (
+                  <p className="text-center text-sm text-gray-500">
+                    +{students.length - 5} more students
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Teachers Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5" />
+              Teachers
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{teachers.length} total</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {teachers.length === 0 ? (
+              <EmptyState
+                title="No teachers"
+                description="No teachers have been assigned to this class yet."
+              />
+            ) : (
+              <div className="space-y-3">
+                {teachers.map((teacher) => (
+                  <div key={teacher.id} className="flex items-center gap-3 rounded-lg border p-3">
+                    <Avatar src={teacher.user.picture} name={teacher.user.name} size="sm" />
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">
+                        {teacher.user.name || teacher.user.email}
+                      </p>
+                      <p className="text-sm text-gray-500">{teacher.user.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Shared Tablets Section */}
       <Card>
@@ -201,138 +276,67 @@ export default function ClassDetailPage() {
             <Tablet className="h-5 w-5" />
             Shared Tablets
           </CardTitle>
-          <Button onClick={handleOpenModal}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Tablet
-          </Button>
+          <Link href={`/admin/shared-tablets?institutionId=${classData.institution?.id}&classId=${classId}`}>
+            <Button size="sm" variant="outline">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Manage Tablets
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           {sharedTablets.length === 0 ? (
             <EmptyState
               icon={Tablet}
               title="No shared tablets"
-              description="Add shared tablets for students to use in this class."
-              action={
-                <Button onClick={handleOpenModal}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Tablet
-                </Button>
-              }
+              description="Go to Shared Tablets menu to add tablets for this class."
             />
           ) : (
             <div className="space-y-3">
-              {sharedTablets.map((tablet) => (
+              {sharedTablets.slice(0, 5).map((tablet) => (
                 <div
                   key={tablet.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
+                  className="flex items-center justify-between rounded-lg border p-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <Tablet className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">{tablet.name}</h4>
-                      <p className="text-sm text-gray-500">
-                        Login ID: <code className="rounded bg-gray-100 px-1">{tablet.loginId}</code>
-                      </p>
-                    </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{tablet.name}</p>
+                    <p className="text-sm text-gray-500">@{tablet.username}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {tablet.hasPinCode && (
-                      <Badge variant="secondary">
-                        <Key className="mr-1 h-3 w-3" />
-                        PIN Set
-                      </Badge>
-                    )}
-                    <Badge variant="secondary">
-                      {(tablet.profile as any)?._count?.portfolios || 0} portfolios
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteTarget(tablet)}
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {tablet.memo && <p className="text-xs text-gray-400">{tablet.memo}</p>}
                 </div>
               ))}
+              {sharedTablets.length > 5 && (
+                <p className="text-center text-sm text-gray-500">
+                  +{sharedTablets.length - 5} more tablets
+                </p>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Create Tablet Modal */}
+      {/* Delete Class Confirmation Modal */}
       <Modal
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        title="Add Shared Tablet"
+        open={isDeleteClassModalOpen}
+        onClose={() => setIsDeleteClassModalOpen(false)}
+        title="Delete Class"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Tablet Name"
-            value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
-            placeholder="e.g., Tablet 1, 성민1"
-            required
-          />
-          <Input
-            label="Login ID"
-            value={formData.loginId}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, loginId: e.target.value }))
-            }
-            placeholder="e.g., tablet001"
-            required
-          />
-          <Input
-            label="PIN Code (4-6 digits)"
-            type="password"
-            value={formData.pinCode}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, pinCode: e.target.value }))
-            }
-            placeholder="Optional"
-            maxLength={6}
-          />
-          <p className="text-sm text-gray-500">
-            Students will use the Login ID and PIN to access this tablet account.
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete <strong>{classData.name}</strong>? This action cannot be
+            undone.
           </p>
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={handleCloseModal}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDeleteClassModalOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isSubmitting}>
-              Create Tablet
+            <Button variant="destructive" onClick={handleDeleteClass} isLoading={isDeletingClass}>
+              Delete Class
             </Button>
           </div>
-        </form>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        title="Delete Shared Tablet"
-      >
-        <p className="text-gray-600">
-          Are you sure you want to delete <strong>{deleteTarget?.name}</strong>?
-          This action cannot be undone.
-        </p>
-        <div className="mt-4 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            isLoading={isDeleting}
-          >
-            Delete
-          </Button>
         </div>
       </Modal>
     </AdminLayout>

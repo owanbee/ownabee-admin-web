@@ -16,6 +16,8 @@ import {
   Tablet,
   UserCheck,
   ArrowRightLeft,
+  UserRoundCog,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useIsOperator } from "@/stores/authStore";
@@ -31,17 +33,18 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/classes", label: "Classes", icon: GraduationCap },
+  { href: "/students", label: "Students", icon: UserCircle },
+  { href: "/shared-tablets", label: "Shared Tablets", icon: Tablet },
 ];
 
 const adminNavItems: NavItem[] = [
   { href: "/admin/institutions", label: "Institutions", icon: Building2, operatorOnly: true },
-  { href: "/admin/classes", label: "Manage Classes", icon: School, operatorOnly: true },
-  { href: "/admin/student-codes", label: "Student Codes", icon: KeyRound, operatorOnly: true },
+  { href: "/admin/classes", label: "Classes", icon: School, operatorOnly: true },
+  { href: "/admin/students", label: "Students", icon: UserCircle, operatorOnly: true },
+  { href: "/admin/shared-tablets", label: "Shared Tablets", icon: Tablet, operatorOnly: true },
   { href: "/admin/members", label: "Members", icon: Users, operatorOnly: true },
   // B2B Features
-  { href: "/admin/shared-tablets", label: "Shared Tablets", icon: Tablet, operatorOnly: true },
-  { href: "/admin/parents", label: "Parents", icon: UserCheck, operatorOnly: true },
-  { href: "/admin/transfers", label: "Transfers", icon: ArrowRightLeft, operatorOnly: true },
+  // { href: "/admin/student-codes", label: "Student Codes", icon: KeyRound, operatorOnly: true },
 ];
 
 export function Sidebar() {
@@ -49,9 +52,7 @@ export function Sidebar() {
   const isOperator = useIsOperator();
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
 
-  const filteredAdminItems = adminNavItems.filter(
-    (item) => !item.operatorOnly || isOperator
-  );
+  const filteredAdminItems = adminNavItems.filter((item) => !item.operatorOnly || isOperator);
 
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -96,7 +97,7 @@ export function Sidebar() {
         {/* Admin section */}
         {filteredAdminItems.length > 0 && (
           <div className="mt-8">
-            <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 pt-4">
               Administration
             </h3>
             <div className="space-y-1">
