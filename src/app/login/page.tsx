@@ -18,9 +18,13 @@ export default function LoginPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  // ID/PW 로그인 폼 상태
+  const [id, setId] = React.useState("");
+  const [password, setPassword] = React.useState("");
+
   // PIN 로그인 폼 상태
-  const [email, setEmail] = React.useState("");
-  const [pinCode, setPinCode] = React.useState("");
+  // const [email, setEmail] = React.useState("");
+  // const [pinCode, setPinCode] = React.useState("");
 
   React.useEffect(() => {
     initialize();
@@ -32,7 +36,10 @@ export default function LoginPage() {
     }
   }, [isInitialized, user, router]);
 
-  const handleLoginSuccess = async (authResponse: { user: any; tokens: { accessToken: string; refreshToken: string } }) => {
+  const handleLoginSuccess = async (authResponse: {
+    user: any;
+    tokens: { accessToken: string; refreshToken: string };
+  }) => {
     // Set auth state
     setAuth(authResponse.user, authResponse.tokens);
 
@@ -69,21 +76,37 @@ export default function LoginPage() {
     setError("Failed to sign in with Google. Please try again.");
   };
 
-  const handlePinLogin = async (e: React.FormEvent) => {
+  const handleIdPwLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      const authResponse = await api.loginWithPin(email, pinCode);
+      const authResponse = await api.loginWithIdPassword(id, password);
       await handleLoginSuccess(authResponse);
     } catch (err: any) {
-      console.error("PIN login error:", err);
-      setError(err.message || "Invalid email or PIN");
+      console.error("ID/Password login error:", err);
+      setError(err.message || "Invalid ID or password");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // const handlePinLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setError(null);
+  //   setIsLoading(true);
+
+  //   try {
+  //     const authResponse = await api.loginWithPin(email, pinCode);
+  //     await handleLoginSuccess(authResponse);
+  //   } catch (err: any) {
+  //     console.error("PIN login error:", err);
+  //     setError(err.message || "Invalid email or PIN");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -93,37 +116,63 @@ export default function LoginPage() {
             <FolderOpen className="h-6 w-6 text-primary-600" />
           </div>
           <CardTitle className="text-2xl">Welcome to Ownabee</CardTitle>
-          <CardDescription>
-            Sign in to access the admin portal
-          </CardDescription>
+          <CardDescription>Sign in to access the admin portal</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-              {error}
-            </div>
+            <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>
           )}
 
-          <Tabs defaultValue="pin" className="w-full">
+          <Tabs defaultValue="id-password" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="pin" className="flex items-center gap-2">
+              <TabsTrigger value="id-password" className="flex items-center gap-2">
                 <KeyRound className="h-4 w-4" />
-                PIN
+                ID/Password
               </TabsTrigger>
               <TabsTrigger value="google" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
                 Google
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="pin" className="mt-4">
+            <TabsContent value="id-password" className="mt-4">
+              <form onSubmit={handleIdPwLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="id">ID</Label>
+                  <Input
+                    id="id"
+                    type="text"
+                    placeholder="Enter your ID"
+                    value={id}
+                    onChange={(e) => setId(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Signing in..." : "Sign in with ID/Password"}
+                </Button>
+              </form>
+            </TabsContent>
+            {/* <TabsContent value="pin" className="mt-4">
               <form onSubmit={handlePinLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@example.com"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -147,8 +196,7 @@ export default function LoginPage() {
                   {isLoading ? "Signing in..." : "Sign in with PIN"}
                 </Button>
               </form>
-            </TabsContent>
-
+            </TabsContent> */}
             <TabsContent value="google" className="mt-4">
               <div className="flex justify-center">
                 <GoogleLogin

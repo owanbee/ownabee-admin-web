@@ -18,14 +18,12 @@ import type {
   PortalUserInfo,
   UserSearchResult,
   ApiError,
-  SharedTabletAccount,
+  SharedTablet,
   CreateSharedTabletPayload,
-  InstitutionParent,
-  CreateInstitutionParentPayload,
-  UpdateInstitutionParentPayload,
-  PortfolioTransfer,
-  TransferPortfoliosPayload,
-  TransferHistoryQuery,
+  UpdateSharedTabletPayload,
+  Student,
+  CreateStudentPayload,
+  UpdateStudentPayload,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -33,7 +31,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 class ApiClient {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
-  private onTokenRefresh: ((tokens: { accessToken: string; refreshToken: string }) => void) | null = null;
+  private onTokenRefresh: ((tokens: { accessToken: string; refreshToken: string }) => void) | null =
+    null;
   private onAuthError: (() => void) | null = null;
 
   setTokens(accessToken: string, refreshToken: string) {
@@ -54,10 +53,7 @@ class ApiClient {
     this.onAuthError = callback;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_URL}${endpoint}`;
     const headers: HeadersInit = {
       ...(options.headers || {}),
@@ -167,6 +163,13 @@ class ApiClient {
     });
   }
 
+  async loginWithIdPassword(id: string, password: string): Promise<AuthResponse> {
+    return this.request<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username: id, password }),
+    });
+  }
+
   async loginWithPin(email: string, pinCode: string): Promise<AuthResponse> {
     return this.request<AuthResponse>("/auth/admin/pin-login", {
       method: "POST",
@@ -174,7 +177,9 @@ class ApiClient {
     });
   }
 
-  async refreshTokens(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refreshTokens(
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     return this.request("/auth/refresh", {
       method: "POST",
       body: JSON.stringify({ refreshToken }),
@@ -227,6 +232,12 @@ class ApiClient {
     });
   }
 
+  async deleteInstitution(id: string): Promise<void> {
+    return this.request<void>(`/admin/institutions/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   // ========================================
   // Admin: Class APIs
   // ========================================
@@ -251,6 +262,54 @@ class ApiClient {
     return this.request<InstitutionClass>(`/admin/institutions/classes/${id}`, {
       method: "PUT",
       body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteClass(id: string): Promise<void> {
+    return this.request<void>(`/admin/institutions/classes/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ========================================
+  // Admin: Student APIs
+  // ========================================
+
+  async getStudents({
+    institutionId,
+    institutionClassId,
+  }: {
+    institutionId?: string;
+    institutionClassId?: string;
+  }): Promise<{ students: Student[]; total: number }> {
+    const params = new URLSearchParams();
+    if (institutionId) params.append("institutionId", institutionId);
+    if (institutionClassId) params.append("institutionClassId", institutionClassId);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return this.request<{ students: Student[]; total: number }>(`/admin/students${query}`);
+  }
+
+  async getStudent(id: string): Promise<Student> {
+    return this.request<Student>(`/admin/students/${id}`);
+  }
+
+  async createStudent(payload: CreateStudentPayload): Promise<Student> {
+    return this.request<Student>("/admin/students", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateStudent(id: string, payload: UpdateStudentPayload): Promise<Student> {
+    return this.request<Student>(`/admin/students/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    return this.request<void>(`/admin/students/${id}`, {
+      method: "DELETE",
     });
   }
 
@@ -300,7 +359,10 @@ class ApiClient {
     return this.request<InstitutionMember[]>(`/admin/institutions/${institutionId}/members`);
   }
 
-  async addInstitutionMember(institutionId: string, payload: AddMemberPayload): Promise<InstitutionMember> {
+  async addInstitutionMember(
+    institutionId: string,
+    payload: AddMemberPayload
+  ): Promise<InstitutionMember> {
     return this.request<InstitutionMember>(`/admin/institutions/${institutionId}/members`, {
       method: "POST",
       body: JSON.stringify(payload),
@@ -339,7 +401,9 @@ class ApiClient {
   // ========================================
 
   async searchUserByEmail(email: string): Promise<UserSearchResult[]> {
-    return this.request<UserSearchResult[]>(`/admin/users/search?email=${encodeURIComponent(email)}`);
+    return this.request<UserSearchResult[]>(
+      `/admin/users/search?email=${encodeURIComponent(email)}`
+    );
   }
 
   // ========================================
@@ -379,19 +443,38 @@ class ApiClient {
   // Admin: Shared Tablet APIs
   // ========================================
 
-  async getSharedTablets(institutionId: string): Promise<SharedTabletAccount[]> {
-    return this.request<SharedTabletAccount[]>(`/admin/institutions/${institutionId}/shared-tablets`);
+  async getSharedTablets({
+    institutionId,
+    institutionClassId,
+  }: {
+    institutionId?: string;
+    institutionClassId?: string;
+  } = {}): Promise<{ tablets: SharedTablet[]; total: number }> {
+    const params = new URLSearchParams();
+    if (institutionId) params.append("institutionId", institutionId);
+    if (institutionClassId) params.append("institutionClassId", institutionClassId);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return this.request<{ tablets: SharedTablet[]; total: number }>(
+      `/admin/shared-tablets${query}`
+    );
   }
 
-  async createSharedTablet(institutionId: string, payload: CreateSharedTabletPayload): Promise<SharedTabletAccount> {
-    return this.request<SharedTabletAccount>(`/admin/institutions/${institutionId}/shared-tablets`, {
+  async getSharedTablet(id: string): Promise<SharedTablet> {
+    return this.request<SharedTablet>(`/admin/shared-tablets/${id}`);
+  }
+
+  async createSharedTablet(payload: CreateSharedTabletPayload): Promise<SharedTablet> {
+    return this.request<SharedTablet>("/admin/shared-tablets", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
-  async getSharedTablet(id: string): Promise<SharedTabletAccount> {
-    return this.request<SharedTabletAccount>(`/admin/shared-tablets/${id}`);
+  async updateSharedTablet(id: string, payload: UpdateSharedTabletPayload): Promise<SharedTablet> {
+    return this.request<SharedTablet>(`/admin/shared-tablets/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
   }
 
   async deleteSharedTablet(id: string): Promise<void> {
@@ -407,79 +490,6 @@ class ApiClient {
     });
   }
 
-  // ========================================
-  // Admin: Class Shared Tablet APIs
-  // ========================================
-
-  async getClassSharedTablets(classId: string): Promise<SharedTabletAccount[]> {
-    return this.request<SharedTabletAccount[]>(`/admin/classes/${classId}/shared-tablets`);
-  }
-
-  async createClassSharedTablet(classId: string, payload: CreateSharedTabletPayload): Promise<SharedTabletAccount> {
-    return this.request<SharedTabletAccount>(`/admin/classes/${classId}/shared-tablets`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-  }
-
-  // ========================================
-  // Admin: Institution Parent APIs
-  // ========================================
-
-  async getInstitutionParents(institutionId: string, search?: string): Promise<InstitutionParent[]> {
-    const params = new URLSearchParams();
-    if (search) params.append("search", search);
-    const query = params.toString() ? `?${params.toString()}` : "";
-    return this.request<InstitutionParent[]>(`/admin/institutions/${institutionId}/parents${query}`);
-  }
-
-  async createInstitutionParent(institutionId: string, payload: CreateInstitutionParentPayload): Promise<InstitutionParent> {
-    return this.request<InstitutionParent>(`/admin/institutions/${institutionId}/parents`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async getInstitutionParent(id: string): Promise<InstitutionParent> {
-    return this.request<InstitutionParent>(`/admin/parents/${id}`);
-  }
-
-  async updateInstitutionParent(id: string, payload: UpdateInstitutionParentPayload): Promise<InstitutionParent> {
-    return this.request<InstitutionParent>(`/admin/parents/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async deleteInstitutionParent(id: string): Promise<void> {
-    return this.request<void>(`/admin/parents/${id}`, {
-      method: "DELETE",
-    });
-  }
-
-  // ========================================
-  // Portal: Transfer APIs
-  // ========================================
-
-  async getSharedProfilePortfolios(sharedTabletId: string): Promise<Portfolio[]> {
-    return this.request<Portfolio[]>(`/portal/shared-tablets/${sharedTabletId}/portfolios`);
-  }
-
-  async transferPortfolios(payload: TransferPortfoliosPayload): Promise<PortfolioTransfer[]> {
-    return this.request<PortfolioTransfer[]>("/portal/portfolios/transfer", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async getTransferHistory(query?: TransferHistoryQuery): Promise<PortfolioTransfer[]> {
-    const params = new URLSearchParams();
-    if (query?.institutionId) params.append("institutionId", query.institutionId);
-    if (query?.startDate) params.append("startDate", query.startDate);
-    if (query?.endDate) params.append("endDate", query.endDate);
-    const queryStr = params.toString() ? `?${params.toString()}` : "";
-    return this.request<PortfolioTransfer[]>(`/portal/transfer-history${queryStr}`);
-  }
 }
 
 export const api = new ApiClient();

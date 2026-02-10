@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useIsOperator } from "@/stores/authStore";
 import { DashboardLayout } from "./DashboardLayout";
@@ -12,32 +12,39 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const isOperator = useIsOperator();
-  const [isChecked, setIsChecked] = React.useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
-  React.useEffect(() => {
-    // Give time for auth to initialize
-    const timer = setTimeout(() => {
-      setIsChecked(true);
-    }, 100);
+  useEffect(() => {
+    // Wait 2 seconds for operator verification
+    const timeoutId = setTimeout(() => {
+      if (!isOperator) {
+        // If still not an operator after 2 seconds, redirect to dashboard
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 2000);
+      }
+      setIsChecking(false);
+    }, 1000);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  React.useEffect(() => {
-    if (isChecked && !isOperator) {
-      router.push("/dashboard");
+    // If operator is confirmed, clear timeout immediately
+    if (isOperator) {
+      clearTimeout(timeoutId);
+      setIsChecking(false);
     }
-  }, [isChecked, isOperator, router]);
 
-  if (!isChecked) {
-    return null;
-  }
+    return () => clearTimeout(timeoutId);
+  }, [isOperator, router]);
 
+  // Show message while checking or if no permission
   if (!isOperator) {
     return (
       <DashboardLayout>
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-          You don't have permission to access this page. Only operators can access admin features.
+        <div
+          className={`rounded-md p-4 text-sm ${isChecking ? "bg-yellow-50 text-yellow-700" : "bg-red-50 text-red-600"}`}
+        >
+          {isChecking
+            ? "Checking permissions. Please wait..."
+            : "You don't have permission to access this page. Redirecting to dashboard..."}
         </div>
       </DashboardLayout>
     );

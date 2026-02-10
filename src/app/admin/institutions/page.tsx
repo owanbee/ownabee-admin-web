@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Building2, Plus, Pencil, Users, GraduationCap } from "lucide-react";
+import {
+  Building2,
+  Plus,
+  Pencil,
+  Users,
+  GraduationCap,
+  UserCircle,
+  Tablet,
+  School,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
@@ -25,7 +33,7 @@ export default function InstitutionsPage() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingInstitution, setEditingInstitution] = React.useState<Institution | null>(null);
-  const [formData, setFormData] = React.useState({ name: "", description: "" });
+  const [formData, setFormData] = React.useState({ name: "", memo: "" });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const fetchInstitutions = React.useCallback(async () => {
@@ -49,11 +57,11 @@ export default function InstitutionsPage() {
       setEditingInstitution(institution);
       setFormData({
         name: institution.name,
-        description: institution.description || "",
+        memo: institution.memo || "",
       });
     } else {
       setEditingInstitution(null);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", memo: "" });
     }
     setIsModalOpen(true);
   };
@@ -61,7 +69,7 @@ export default function InstitutionsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingInstitution(null);
-    setFormData({ name: "", description: "" });
+    setFormData({ name: "", memo: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,9 +80,7 @@ export default function InstitutionsPage() {
     try {
       if (editingInstitution) {
         const updated = await api.updateInstitution(editingInstitution.id, formData);
-        setInstitutions((prev) =>
-          prev.map((inst) => (inst.id === updated.id ? updated : inst))
-        );
+        setInstitutions((prev) => prev.map((inst) => (inst.id === updated.id ? updated : inst)));
       } else {
         const created = await api.createInstitution(formData);
         setInstitutions((prev) => [...prev, created]);
@@ -114,11 +120,7 @@ export default function InstitutionsPage() {
         }
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {institutions.length === 0 ? (
         <EmptyState
@@ -143,33 +145,35 @@ export default function InstitutionsPage() {
                       <Building2 className="h-5 w-5 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {institution.name}
-                      </h3>
+                      <h3 className="font-semibold text-gray-900">{institution.name}</h3>
                       <p className="text-sm text-gray-500">
                         Created {formatDate(institution.createdAt)}
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenModal(institution)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenModal(institution)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {institution.description && (
+                {institution.memo && (
                   <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                    {institution.description}
+                    {institution.memo}
                   </p>
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge variant="secondary">
-                    <GraduationCap className="mr-1 h-3 w-3" />
-                    {institution._count?.classes || 0} classes
+                    <School className="mr-1 h-3 w-3" />
+                    {institution._count?.institutionClasses || 0} classes
+                  </Badge>
+                  <Badge variant="secondary">
+                    <UserCircle className="mr-1 h-3 w-3" />
+                    {institution._count?.students || 0} students
+                  </Badge>
+                  <Badge variant="secondary">
+                    <Tablet className="mr-1 h-3 w-3" />
+                    {institution._count?.sharedTablets || 0} tablets
                   </Badge>
                   <Badge variant="secondary">
                     <Users className="mr-1 h-3 w-3" />
@@ -204,14 +208,11 @@ export default function InstitutionsPage() {
             placeholder="Enter institution name"
             required
           />
-          <Textarea
-            label="Description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Enter description (optional)"
-            rows={3}
+          <Input
+            label="Memo"
+            value={formData.memo}
+            onChange={(e) => setFormData((prev) => ({ ...prev, memo: e.target.value }))}
+            placeholder="Enter memo (optional)"
           />
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCloseModal}>

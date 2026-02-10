@@ -46,18 +46,9 @@ export default function ClassesPage() {
       <PageHeader
         title="My Classes"
         description="View and manage students in your accessible classes"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Classes" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Classes" }]}
       />
-
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
       {classes.length === 0 ? (
         <EmptyState
           icon={GraduationCap}
@@ -76,25 +67,17 @@ export default function ClassesPage() {
                         <GraduationCap className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">
-                          {cls.name}
-                        </h3>
+                        <h3 className="font-semibold text-gray-900">{cls.name}</h3>
                         {cls.institution && (
-                          <p className="text-sm text-gray-500">
-                            {cls.institution.name}
-                          </p>
+                          <p className="text-sm text-gray-500">{cls.institution.name}</p>
                         )}
                       </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
-
-                  {cls.description && (
-                    <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                      {cls.description}
-                    </p>
+                  {cls.memo && (
+                    <p className="mt-3 text-sm text-gray-600 line-clamp-2">{cls.memo}</p>
                   )}
-
                   <div className="mt-4 flex items-center gap-2">
                     <Badge variant="secondary">
                       <Users className="mr-1 h-3 w-3" />

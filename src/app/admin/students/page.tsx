@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Tablet, Plus, Pencil, Building2, School } from "lucide-react";
+import { School, Plus, Pencil, Building2, Users, User } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -15,12 +16,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
-import type { SharedTablet, Institution, InstitutionClass } from "@/types";
+import type { Student, CreateStudentPayload, InstitutionClass, Institution } from "@/types";
 
-function AdminSharedTabletsPageContent() {
+function AdminStudentsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [tablets, setTablets] = useState<SharedTablet[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [classes, setClasses] = useState<InstitutionClass[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +38,7 @@ function AdminSharedTabletsPageContent() {
 
     const params = new URLSearchParams();
     if (institutionId) params.set("institutionId", institutionId);
-    router.push(`/admin/shared-tablets?${params.toString()}`);
+    router.push(`/admin/students?${params.toString()}`);
   };
 
   const handleClassFilterChange = (classId: string) => {
@@ -46,33 +47,35 @@ function AdminSharedTabletsPageContent() {
     const params = new URLSearchParams();
     if (filterInstitutionId) params.set("institutionId", filterInstitutionId);
     if (classId) params.set("classId", classId);
-    router.push(`/admin/shared-tablets?${params.toString()}`);
+    router.push(`/admin/students?${params.toString()}`);
   };
 
-  // Fetch tablets function (reusable)
-  const fetchTablets = useCallback(async () => {
+  // Fetch students function (reusable)
+  const fetchStudents = useCallback(async () => {
     try {
       const params: { institutionId?: string; institutionClassId?: string } = {};
       if (filterInstitutionId) params.institutionId = filterInstitutionId;
       if (filterClassId) params.institutionClassId = filterClassId;
 
-      const tabletsData = await api.getSharedTablets(params);
-      setTablets(tabletsData.tablets);
+      const studentsData = await api.getStudents(params);
+      setStudents(studentsData.students);
     } catch (err) {
-      console.error("Failed to fetch tablets:", err);
-      setError(err instanceof Error ? err.message : "Failed to load tablets");
+      console.error("Failed to fetch students:", err);
+      setError(err instanceof Error ? err.message : "Failed to load students");
     }
   }, [filterInstitutionId, filterClassId]);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTablet, setEditingTablet] = useState<SharedTablet | null>(null);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
     password: "",
     institutionId: "",
     institutionClassId: "",
+    studentNumber: "",
+    grade: "",
     memo: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,13 +99,13 @@ function AdminSharedTabletsPageContent() {
         setInstitutions(institutionsData);
         setClasses(institutionClassesData);
 
-        // Fetch tablets with URL params
+        // Fetch students with URL params
         const params: { institutionId?: string; institutionClassId?: string } = {};
         if (institutionIdParam) params.institutionId = institutionIdParam;
         if (classIdParam) params.institutionClassId = classIdParam;
 
-        const tabletsData = await api.getSharedTablets(params);
-        setTablets(tabletsData.tablets);
+        const studentsData = await api.getStudents(params);
+        setStudents(studentsData.students);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError(err instanceof Error ? err.message : "Failed to load data");
@@ -114,13 +117,13 @@ function AdminSharedTabletsPageContent() {
     fetchData();
   }, [searchParams]);
 
-  // Refetch tablets when filters change manually
+  // Refetch students when filters change manually
   useEffect(() => {
     // Only fetch if not initial load
     if (!isLoading) {
-      fetchTablets();
+      fetchStudents();
     }
-  }, [fetchTablets, isLoading]);
+  }, [fetchStudents, isLoading]);
 
   // Reset class filter when institution changes
   useEffect(() => {
@@ -132,25 +135,29 @@ function AdminSharedTabletsPageContent() {
     }
   }, [filterInstitutionId, filterClassId, classes]);
 
-  const handleOpenModal = (tablet?: SharedTablet) => {
-    if (tablet) {
-      setEditingTablet(tablet);
+  const handleOpenModal = (std?: Student) => {
+    if (std) {
+      setEditingStudent(std);
       setFormData({
-        name: tablet.name,
-        username: tablet.username || "",
+        name: std.name,
+        username: std.username || "",
         password: "",
-        institutionId: tablet.institutionId,
-        institutionClassId: tablet.institutionClassId,
-        memo: tablet.memo || "",
+        institutionId: std.institutionClass?.institution.id || "",
+        institutionClassId: std.institutionClass?.id || "",
+        studentNumber: std.studentNumber || "",
+        grade: std.grade || "",
+        memo: std.memo || "",
       });
     } else {
-      setEditingTablet(null);
+      setEditingStudent(null);
       setFormData({
         name: "",
         username: "",
         password: "",
         institutionId: filterInstitutionId || "",
         institutionClassId: filterClassId || "",
+        studentNumber: "",
+        grade: "",
         memo: "",
       });
     }
@@ -159,13 +166,15 @@ function AdminSharedTabletsPageContent() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingTablet(null);
+    setEditingStudent(null);
     setFormData({
       name: "",
       username: "",
       password: "",
       institutionId: "",
       institutionClassId: "",
+      studentNumber: "",
+      grade: "",
       memo: "",
     });
   };
@@ -176,27 +185,31 @@ function AdminSharedTabletsPageContent() {
     setError(null);
 
     try {
-      if (editingTablet) {
-        await api.updateSharedTablet(editingTablet.id, {
+      if (editingStudent) {
+        await api.updateStudent(editingStudent.id, {
           name: formData.name,
+          ...(formData.studentNumber && { studentNumber: formData.studentNumber }),
+          ...(formData.grade && { grade: formData.grade }),
           ...(formData.memo && { memo: formData.memo }),
           ...(formData.password && { password: formData.password }),
         });
       } else {
-        await api.createSharedTablet({
+        await api.createStudent({
           institutionId: formData.institutionId,
           institutionClassId: formData.institutionClassId,
           username: formData.username,
           password: formData.password,
           name: formData.name,
+          ...(formData.studentNumber && { studentNumber: formData.studentNumber }),
+          ...(formData.grade && { grade: formData.grade }),
           ...(formData.memo && { memo: formData.memo }),
         });
       }
       handleCloseModal();
-      fetchTablets();
+      fetchStudents();
     } catch (err) {
-      console.error("Failed to save tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to save tablet");
+      console.error("Failed to save student:", err);
+      setError(err instanceof Error ? err.message : "Failed to save student");
     } finally {
       setIsSubmitting(false);
     }
@@ -205,7 +218,7 @@ function AdminSharedTabletsPageContent() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <LoadingPage message="Loading shared tablets..." />
+        <LoadingPage message="Loading students..." />
       </AdminLayout>
     );
   }
@@ -230,17 +243,17 @@ function AdminSharedTabletsPageContent() {
   return (
     <AdminLayout>
       <PageHeader
-        title="Manage Shared Tablets"
-        description="Create and manage shared tablet accounts across all institutions"
+        title="Manage Students"
+        description="Create and manage students across all institutions"
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Admin" },
-          { label: "Shared Tablets" },
+          { label: "Students" },
         ]}
         action={
           <Button onClick={() => handleOpenModal()}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Shared Tablet
+            Add Student
           </Button>
         }
       />
@@ -263,59 +276,64 @@ function AdminSharedTabletsPageContent() {
         />
       </div>
 
-      {tablets.length === 0 ? (
+      {students.length === 0 ? (
         <EmptyState
-          icon={Tablet}
-          title="No shared tablets yet"
+          icon={School}
+          title="No students yet"
           description={
             filterInstitutionId
-              ? "No shared tablets found for this institution."
-              : "Create your first shared tablet to get started."
+              ? "No students found for this institution."
+              : "Create your first student to get started."
           }
           action={
             <Button onClick={() => handleOpenModal()}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Shared Tablet
+              Add Student
             </Button>
           }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {tablets.map((tablet) => (
-            <Card key={tablet.id} className="hover:shadow-md transition-shadow">
+          {students.map((std) => (
+            <Card key={std.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <Tablet className="h-5 w-5 text-purple-600" />
+                    <div className="rounded-lg bg-blue-100 p-2">
+                      <User className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{tablet.name}</h3>
-                      {tablet.username && (
-                        <p className="text-sm text-gray-500">@{tablet.username}</p>
-                      )}
+                      <h3 className="font-semibold text-gray-900">{std.name}</h3>
+                      {std.username && <p className="text-sm text-gray-500">@{std.username}</p>}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleOpenModal(tablet)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenModal(std)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="mt-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    <span>{tablet.institutionName}</span>
+                {std.institutionClass && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      <span>{std.institutionClass.institution.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <School className="h-4 w-4" />
+                      <span className="text-gray-500">{std.institutionClass.name}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <School className="h-4 w-4" />
-                    <span className="text-gray-500">{tablet.institutionClassName}</span>
-                  </div>
-                </div>
-                {tablet.memo && (
-                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">{tablet.memo}</p>
                 )}
-                <p className="mt-3 text-xs text-gray-400">Created {formatDate(tablet.createdAt)}</p>
+                {std.studentNumber && (
+                  <p className="mt-2 text-sm text-gray-600">Student #: {std.studentNumber}</p>
+                )}
+                {std.grade && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Badge variant="secondary">{std.grade}</Badge>
+                  </div>
+                )}
+                <p className="mt-3 text-xs text-gray-400">Created {formatDate(std.createdAt)}</p>
                 <div className="mt-4">
-                  <Link href={`/admin/shared-tablets/${tablet.id}`}>
+                  <Link href={`/admin/students/${std.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       View Details
                     </Button>
@@ -331,10 +349,10 @@ function AdminSharedTabletsPageContent() {
       <Modal
         open={isModalOpen}
         onClose={handleCloseModal}
-        title={editingTablet ? "Edit Shared Tablet" : "Create Shared Tablet"}
+        title={editingStudent ? "Edit Student" : "Create Student"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!editingTablet && (
+          {!editingStudent && (
             <>
               <Select
                 label="Institution"
@@ -395,22 +413,35 @@ function AdminSharedTabletsPageContent() {
             </>
           )}
           <Input
-            label={editingTablet ? "New Password (Optional)" : "Password"}
+            label={editingStudent ? "New Password (Optional)" : "Password"}
             type="password"
             value={formData.password}
             onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
             placeholder={
-              editingTablet ? "Leave blank to keep current password" : "Enter password (required)"
+              editingStudent ? "Leave blank to keep current password" : "Enter password (required)"
             }
-            required={!editingTablet}
+            required={!editingStudent}
           />
           <Input
             label="Name"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Enter tablet name (required)"
+            placeholder="Enter student name (required)"
             required
           />
+          <Input
+            label="Student Number"
+            value={formData.studentNumber}
+            onChange={(e) => setFormData((prev) => ({ ...prev, studentNumber: e.target.value }))}
+            placeholder="Enter student number (optional)"
+          />
+          <Input
+            label="Grade"
+            value={formData.grade}
+            onChange={(e) => setFormData((prev) => ({ ...prev, grade: e.target.value }))}
+            placeholder="Enter grade (optional)"
+          />
+
           <Input
             label="Memo"
             value={formData.memo}
@@ -422,7 +453,7 @@ function AdminSharedTabletsPageContent() {
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
-              {editingTablet ? "Update" : "Create"}
+              {editingStudent ? "Update" : "Create"}
             </Button>
           </div>
         </form>
@@ -431,16 +462,16 @@ function AdminSharedTabletsPageContent() {
   );
 }
 
-export default function AdminSharedTabletsPage() {
+export default function AdminStudentsPage() {
   return (
     <Suspense
       fallback={
         <AdminLayout>
-          <LoadingPage message="Loading shared tablets..." />
+          <LoadingPage message="Loading students..." />
         </AdminLayout>
       }
     >
-      <AdminSharedTabletsPageContent />
+      <AdminStudentsPageContent />
     </Suspense>
   );
 }
