@@ -206,6 +206,37 @@ class ApiClient {
     return this.request<Portfolio[]>(`/portal/students/${profileId}/portfolios`);
   }
 
+  async getMyStudents(): Promise<StudentProfile[]> {
+    // Get all students from all accessible classes
+    const classes = await this.getMyClasses();
+    const studentsByClass = await Promise.all(
+      classes.map((cls) => this.getClassStudents(cls.id))
+    );
+    // Flatten and deduplicate students
+    const allStudents = studentsByClass.flat();
+    const uniqueStudents = allStudents.filter(
+      (student, index, self) => index === self.findIndex((s) => s.id === student.id)
+    );
+    return uniqueStudents;
+  }
+
+  async getMySharedTablets(): Promise<SharedTablet[]> {
+    // Get all tablets from all accessible classes
+    const classes = await this.getMyClasses();
+    const tabletsByClass = await Promise.all(
+      classes.map(async (cls) => {
+        const result = await this.getSharedTablets({ institutionClassId: cls.id });
+        return result.tablets;
+      })
+    );
+    // Flatten and deduplicate tablets
+    const allTablets = tabletsByClass.flat();
+    const uniqueTablets = allTablets.filter(
+      (tablet, index, self) => index === self.findIndex((t) => t.id === tablet.id)
+    );
+    return uniqueTablets;
+  }
+
   // ========================================
   // Admin: Institution APIs
   // ========================================

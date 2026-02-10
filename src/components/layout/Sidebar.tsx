@@ -33,6 +33,8 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/classes", label: "Classes", icon: GraduationCap },
+  { href: "/students", label: "Students", icon: UserCircle },
+  { href: "/shared-tablets", label: "Shared Tablets", icon: Tablet },
 ];
 
 const adminNavItems: NavItem[] = [
