@@ -1,43 +1,103 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, User, School, Calendar, FolderOpen, Building2, Hash, BookOpen, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  GraduationCap,
+  Calendar,
+  Building2,
+  Hash,
+  BookOpen,
+  FileText,
+  Pencil,
+} from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Modal } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
+import { useIsInstitutionAdmin } from "@/stores/authStore";
 import type { Student } from "@/types";
 
 export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const studentId = params.studentId as string;
+  const isInstitutionAdmin = useIsInstitutionAdmin();
 
   const [student, setStudent] = React.useState<Student | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    async function fetchStudent() {
-      try {
-        const data = await api.getStudent(studentId);
-        setStudent(data);
-      } catch (err) {
-        console.error("Failed to fetch student:", err);
-        setError(err instanceof Error ? err.message : "Failed to load student");
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [editFormData, setEditFormData] = React.useState({
+    name: "",
+    studentNumber: "",
+    grade: "",
+    memo: "",
+    password: "",
+  });
 
-    fetchStudent();
+  const fetchStudent = React.useCallback(async () => {
+    try {
+      const data = await api.getPortalStudent(studentId);
+      setStudent(data);
+    } catch (err) {
+      console.error("Failed to fetch student:", err);
+      setError(err instanceof Error ? err.message : "Failed to load student");
+    } finally {
+      setIsLoading(false);
+    }
   }, [studentId]);
+
+  React.useEffect(() => {
+    fetchStudent();
+  }, [fetchStudent]);
+
+  const handleOpenEditModal = () => {
+    if (student) {
+      setEditFormData({
+        name: student.name,
+        studentNumber: student.studentNumber || "",
+        grade: student.grade || "",
+        memo: student.memo || "",
+        password: "",
+      });
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleUpdateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    setError(null);
+
+    try {
+      await api.updatePortalStudent(studentId, {
+        name: editFormData.name,
+        ...(editFormData.studentNumber && { studentNumber: editFormData.studentNumber }),
+        ...(editFormData.grade && { grade: editFormData.grade }),
+        ...(editFormData.memo && { memo: editFormData.memo }),
+        ...(editFormData.password && { password: editFormData.password }),
+      });
+      setIsEditModalOpen(false);
+      await fetchStudent();
+    } catch (err) {
+      console.error("Failed to update student:", err);
+      setError(err instanceof Error ? err.message : "Failed to update student");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -73,10 +133,18 @@ export default function StudentDetailPage() {
           { label: student.name },
         ]}
         action={
-          <Button variant="outline" onClick={() => router.push("/students")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+          <div className="flex gap-2">
+            {isInstitutionAdmin && (
+              <Button onClick={handleOpenEditModal}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.push("/students")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </div>
         }
       />
 
@@ -112,7 +180,7 @@ export default function StudentDetailPage() {
 
                         <div className="flex items-start gap-3">
                           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                            <School className="h-4 w-4" />
+                            <GraduationCap className="h-4 w-4" />
                             <span className="font-medium">Class:</span>
                           </div>
                           <span className="text-sm text-gray-900">
@@ -148,7 +216,9 @@ export default function StudentDetailPage() {
                           <FileText className="h-4 w-4" />
                           <span className="font-medium">Memo:</span>
                         </div>
-                        <span className="text-sm text-gray-900 whitespace-pre-wrap">{student.memo}</span>
+                        <span className="text-sm text-gray-900 whitespace-pre-wrap">
+                          {student.memo}
+                        </span>
                       </div>
                     )}
 
@@ -164,67 +234,62 @@ export default function StudentDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Profiles Section */}
-          {student.profiles && student.profiles.length > 0 && (
-            <Card className="mt-6">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <FolderOpen className="h-5 w-5 text-gray-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Profiles</h3>
-                  </div>
-                  <Badge variant="secondary">{student.profiles.length}</Badge>
-                </div>
-
-                <div className="space-y-3">
-                  {student.profiles.map((profile) => (
-                    <Link
-                      key={profile.id}
-                      href={`/students/${profile.id}/portfolios`}
-                    >
-                      <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
-                        <div>
-                          <p className="font-medium text-gray-900">{profile.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {profile.type}
-                            </Badge>
-                            {profile.institutionName && (
-                              <span className="text-xs text-gray-500">{profile.institutionName}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-primary-600">
-                          <FolderOpen className="h-4 w-4" />
-                          <span>View Portfolios</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Portfolio Management Card */}
-        <div className="space-y-6">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Portfolio Management</h3>
-              <div className="space-y-3">
-                <Link href={`/students/${studentId}/portfolios`}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <FolderOpen className="mr-2 h-4 w-4" />
-                    View Portfolios
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Edit Student Modal */}
+      {isInstitutionAdmin && (
+        <Modal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title="Edit Student"
+        >
+          <form onSubmit={handleUpdateStudent} className="space-y-4">
+            <Input
+              label="Name"
+              value={editFormData.name}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter student name"
+              required
+            />
+            <Input
+              label="Student Number (Optional)"
+              value={editFormData.studentNumber}
+              onChange={(e) =>
+                setEditFormData((prev) => ({ ...prev, studentNumber: e.target.value }))
+              }
+              placeholder="Enter student number"
+            />
+            <Input
+              label="Grade (Optional)"
+              value={editFormData.grade}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, grade: e.target.value }))}
+              placeholder="e.g., Grade 5"
+            />
+            <Input
+              label="Memo (Optional)"
+              value={editFormData.memo}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, memo: e.target.value }))}
+              placeholder="Enter memo"
+            />
+            <Input
+              label="New Password (Optional)"
+              type="password"
+              value={editFormData.password}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, password: e.target.value }))}
+              placeholder="Leave blank to keep current password"
+            />
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" isLoading={isUpdating}>
+                Update
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </DashboardLayout>
   );
 }

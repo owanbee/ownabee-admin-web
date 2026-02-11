@@ -3,16 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Building2,
-  GraduationCap,
-  Users,
-  Trash2,
-  UserCircle,
-  Tablet,
-  ExternalLink,
-  School,
-} from "lucide-react";
+import { GraduationCap, Users, Trash2, UserCircle, Tablet, ExternalLink } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,7 +128,7 @@ export default function InstitutionDetailPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <School className="h-5 w-5" />
+              <GraduationCap className="h-5 w-5" />
               Classes
             </CardTitle>
             <Link href={`/admin/classes?institutionId=${institutionId}`}>

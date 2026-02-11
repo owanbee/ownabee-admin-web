@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Tablet, Calendar, Pencil, Trash2, Building2, Hash } from "lucide-react";
+import {
+  ArrowLeft,
+  Tablet,
+  Calendar,
+  Pencil,
+  Trash2,
+  Building2,
+  Hash,
+  FileText,
+  GraduationCap,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -197,7 +207,7 @@ export default function SharedTabletDetailPage() {
 
                     <div className="flex items-start gap-3">
                       <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                        <Hash className="h-4 w-4" />
+                        <GraduationCap className="h-4 w-4" />
                         <span className="font-medium">Class:</span>
                       </div>
                       <span className="text-sm text-gray-900">
@@ -208,9 +218,12 @@ export default function SharedTabletDetailPage() {
                     {tablet.memo && (
                       <div className="flex items-start gap-3">
                         <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
+                          <FileText className="h-4 w-4" />
                           <span className="font-medium">Memo:</span>
                         </div>
-                        <span className="text-sm text-gray-900 whitespace-pre-wrap">{tablet.memo}</span>
+                        <span className="text-sm text-gray-900 whitespace-pre-wrap">
+                          {tablet.memo}
+                        </span>
                       </div>
                     )}
 
@@ -228,7 +241,9 @@ export default function SharedTabletDetailPage() {
                           <Calendar className="h-4 w-4" />
                           <span className="font-medium">Updated:</span>
                         </div>
-                        <span className="text-sm text-gray-900">{formatDate(tablet.updatedAt)}</span>
+                        <span className="text-sm text-gray-900">
+                          {formatDate(tablet.updatedAt)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -259,11 +274,7 @@ export default function SharedTabletDetailPage() {
       </div>
 
       {/* Edit Modal */}
-      <Modal
-        open={isEditModalOpen}
-        onClose={handleCloseEditModal}
-        title="Edit Shared Tablet"
-      >
+      <Modal open={isEditModalOpen} onClose={handleCloseEditModal} title="Edit Shared Tablet">
         <form onSubmit={handleSubmitEdit} className="space-y-4">
           <Input
             label="Name"
@@ -297,24 +308,17 @@ export default function SharedTabletDetailPage() {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        open={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        title="Delete Shared Tablet"
-      >
+      <Modal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} title="Delete Shared Tablet">
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Are you sure you want to delete <strong>{tablet.name}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{tablet.name}</strong>? This action cannot be
+            undone.
           </p>
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCloseDeleteModal}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              isLoading={isDeleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} isLoading={isDeleting}>
               Delete Tablet
             </Button>
           </div>

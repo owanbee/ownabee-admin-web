@@ -3,7 +3,15 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { School, Plus, Pencil, Building2, Tablet, UserCheck, UserCircle } from "lucide-react";
+import {
+  GraduationCap,
+  Plus,
+  Pencil,
+  Building2,
+  Tablet,
+  UserCheck,
+  UserCircle,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -161,7 +169,7 @@ function AdminClassesPageContent() {
 
       {classes.length === 0 ? (
         <EmptyState
-          icon={School}
+          icon={GraduationCap}
           title="No classes yet"
           description={
             filterInstitutionId
@@ -183,7 +191,7 @@ function AdminClassesPageContent() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-blue-100 p-2">
-                      <School className="h-5 w-5 text-blue-600" />
+                      <GraduationCap className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{cls.name}</h3>

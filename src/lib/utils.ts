@@ -53,7 +53,7 @@ export function getRoleDisplayName(role: string): string {
     case "OPERATOR":
       return "Operator";
     case "INSTITUTION_ADMIN":
-      return "Institution Admin";
+      return "Admin";
     case "TEACHER":
       return "Teacher";
     case "USER":

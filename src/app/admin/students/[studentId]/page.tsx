@@ -2,7 +2,18 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, User, School, Calendar, Pencil, Trash2, FolderOpen, Building2, Hash, BookOpen, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  GraduationCap,
+  Calendar,
+  Pencil,
+  Trash2,
+  Building2,
+  Hash,
+  BookOpen,
+  FileText,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -208,7 +219,7 @@ export default function StudentDetailPage() {
 
                         <div className="flex items-start gap-3">
                           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                            <School className="h-4 w-4" />
+                            <GraduationCap className="h-4 w-4" />
                             <span className="font-medium">Class:</span>
                           </div>
                           <span className="text-sm text-gray-900">
@@ -244,7 +255,9 @@ export default function StudentDetailPage() {
                           <FileText className="h-4 w-4" />
                           <span className="font-medium">Memo:</span>
                         </div>
-                        <span className="text-sm text-gray-900 whitespace-pre-wrap">{student.memo}</span>
+                        <span className="text-sm text-gray-900 whitespace-pre-wrap">
+                          {student.memo}
+                        </span>
                       </div>
                     )}
 
@@ -260,42 +273,6 @@ export default function StudentDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Profiles Section */}
-          {student.profiles && student.profiles.length > 0 && (
-            <Card className="mt-6">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <FolderOpen className="h-5 w-5 text-gray-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Profiles</h3>
-                  </div>
-                  <Badge variant="secondary">{student.profiles.length}</Badge>
-                </div>
-
-                <div className="space-y-3">
-                  {student.profiles.map((profile) => (
-                    <div
-                      key={profile.id}
-                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50"
-                    >
-                      <div>
-                        <p className="font-medium text-gray-900">{profile.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {profile.type}
-                          </Badge>
-                          {profile.institutionName && (
-                            <span className="text-xs text-gray-500">{profile.institutionName}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Side Info */}
@@ -319,11 +296,7 @@ export default function StudentDetailPage() {
       </div>
 
       {/* Edit Modal */}
-      <Modal
-        open={isEditModalOpen}
-        onClose={handleCloseEditModal}
-        title="Edit Student"
-      >
+      <Modal open={isEditModalOpen} onClose={handleCloseEditModal} title="Edit Student">
         <form onSubmit={handleSubmitEdit} className="space-y-4">
           <Input
             label="Name"
@@ -369,32 +342,17 @@ export default function StudentDetailPage() {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        open={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        title="Delete Student"
-      >
+      <Modal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} title="Delete Student">
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Are you sure you want to delete <strong>{student.name}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{student.name}</strong>? This action cannot be
+            undone.
           </p>
-          {student.profiles && student.profiles.length > 0 && (
-            <div className="rounded-md bg-yellow-50 p-3">
-              <p className="text-sm text-yellow-800">
-                Warning: This student has {student.profiles.length} profile{student.profiles.length !== 1 ? 's' : ''}.
-                Deleting this student may affect related data.
-              </p>
-            </div>
-          )}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCloseDeleteModal}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              isLoading={isDeleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} isLoading={isDeleting}>
               Delete Student
             </Button>
           </div>

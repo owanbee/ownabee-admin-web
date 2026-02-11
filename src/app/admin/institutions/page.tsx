@@ -2,16 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  Building2,
-  Plus,
-  Pencil,
-  Users,
-  GraduationCap,
-  UserCircle,
-  Tablet,
-  School,
-} from "lucide-react";
+import { Building2, Plus, Pencil, Users, GraduationCap, UserCircle, Tablet } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -157,14 +148,12 @@ export default function InstitutionsPage() {
                 </div>
 
                 {institution.memo && (
-                  <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                    {institution.memo}
-                  </p>
+                  <p className="mt-3 text-sm text-gray-600 line-clamp-2">{institution.memo}</p>
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge variant="secondary">
-                    <School className="mr-1 h-3 w-3" />
+                    <GraduationCap className="mr-1 h-3 w-3" />
                     {institution._count?.institutionClasses || 0} classes
                   </Badge>
                   <Badge variant="secondary">

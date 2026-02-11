@@ -23,24 +23,29 @@ export interface AuthResponse {
 
 // Portal Types
 export interface PortalUserInfo {
-  id: string;
+  userId: string;
   email: string;
   name: string | null;
   picture: string | null;
   globalRole: GlobalRole;
-  institutionRoles: InstitutionMembership[];
+  roles: string[];
+  isInstitutionAdmin: boolean;
+  isTeacher: boolean;
+  institutionMemberships: InstitutionMembership[];
+  assignedClasses: AssignedClass[];
 }
 
 export interface InstitutionMembership {
   institutionId: string;
   institutionName: string;
   role: InstitutionRole;
-  assignedClasses?: AssignedClass[];
 }
 
 export interface AssignedClass {
   classId: string;
   className: string;
+  institutionId: string;
+  institutionName: string;
 }
 
 // Institution Types
@@ -114,7 +119,6 @@ export interface Student {
       name: string;
     };
   };
-  profiles?: StudentProfile[];
   createdAt: string;
   updatedAt?: string;
   _count?: {
@@ -312,7 +316,7 @@ export interface SharedTabletAccount extends SharedTablet {
   institution?: Institution;
   user?: User;
   profileId?: string;
-  profile?: StudentProfile;
+  // profile?: StudentProfile;
   deletedAt?: string | null;
   _count?: {
     portfolios: number;

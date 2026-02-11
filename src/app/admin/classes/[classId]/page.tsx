@@ -4,7 +4,7 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  School,
+  GraduationCap,
   Tablet,
   ArrowLeft,
   UserCircle,
@@ -106,7 +106,7 @@ export default function ClassDetailPage() {
     return (
       <AdminLayout>
         <EmptyState
-          icon={School}
+          icon={GraduationCap}
           title="Class not found"
           description="The class you're looking for doesn't exist."
           action={
@@ -160,7 +160,7 @@ export default function ClassDetailPage() {
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="rounded-lg bg-blue-100 p-3">
-              <School className="h-6 w-6 text-blue-600" />
+              <GraduationCap className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-semibold">{classData.name}</h2>
@@ -194,7 +194,9 @@ export default function ClassDetailPage() {
               <UserCircle className="h-5 w-5" />
               Students
             </CardTitle>
-            <Link href={`/admin/students?institutionId=${classData.institution?.id}&classId=${classId}`}>
+            <Link
+              href={`/admin/students?institutionId=${classData.institution?.id}&classId=${classId}`}
+            >
               <Button size="sm" variant="outline">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Manage Students
@@ -276,7 +278,9 @@ export default function ClassDetailPage() {
             <Tablet className="h-5 w-5" />
             Shared Tablets
           </CardTitle>
-          <Link href={`/admin/shared-tablets?institutionId=${classData.institution?.id}&classId=${classId}`}>
+          <Link
+            href={`/admin/shared-tablets?institutionId=${classData.institution?.id}&classId=${classId}`}
+          >
             <Button size="sm" variant="outline">
               <ExternalLink className="mr-2 h-4 w-4" />
               Manage Tablets

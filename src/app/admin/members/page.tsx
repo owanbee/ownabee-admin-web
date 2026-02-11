@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Users,
-  Building2,
-  School,
-  Plus,
-  Trash2,
-  Search,
-  UserPlus,
-  GraduationCap,
-} from "lucide-react";
+import { Users, GraduationCap, Plus, Trash2, Search, UserPlus } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

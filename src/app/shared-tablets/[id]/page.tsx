@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Tablet, Calendar, Building2, Hash, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Tablet,
+  Calendar,
+  Building2,
+  Hash,
+  FileText,
+  GraduationCap,
+} from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +32,7 @@ export default function SharedTabletDetailPage() {
   React.useEffect(() => {
     async function fetchTablet() {
       try {
-        const data = await api.getSharedTablet(tabletId);
+        const data = await api.getPortalSharedTablet(tabletId);
         setTablet(data);
       } catch (err) {
         console.error("Failed to fetch tablet:", err);
@@ -100,14 +108,12 @@ export default function SharedTabletDetailPage() {
                       <Building2 className="h-4 w-4" />
                       <span className="font-medium">Institution:</span>
                     </div>
-                    <span className="text-sm text-gray-900">
-                      {tablet.institutionName || "N/A"}
-                    </span>
+                    <span className="text-sm text-gray-900">{tablet.institutionName || "N/A"}</span>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                      <Hash className="h-4 w-4" />
+                      <GraduationCap className="h-4 w-4" />
                       <span className="font-medium">Class:</span>
                     </div>
                     <span className="text-sm text-gray-900">
@@ -121,7 +127,9 @@ export default function SharedTabletDetailPage() {
                         <FileText className="h-4 w-4" />
                         <span className="font-medium">Memo:</span>
                       </div>
-                      <span className="text-sm text-gray-900 whitespace-pre-wrap">{tablet.memo}</span>
+                      <span className="text-sm text-gray-900 whitespace-pre-wrap">
+                        {tablet.memo}
+                      </span>
                     </div>
                   )}
 

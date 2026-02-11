@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { School, Plus, Pencil, Building2, Users, User } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Building2, Users, User } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -278,7 +278,7 @@ function AdminStudentsPageContent() {
 
       {students.length === 0 ? (
         <EmptyState
-          icon={School}
+          icon={GraduationCap}
           title="No students yet"
           description={
             filterInstitutionId
@@ -318,7 +318,7 @@ function AdminStudentsPageContent() {
                       <span>{std.institutionClass.institution.name}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <School className="h-4 w-4" />
+                      <GraduationCap className="h-4 w-4" />
                       <span className="text-gray-500">{std.institutionClass.name}</span>
                     </div>
                   </div>

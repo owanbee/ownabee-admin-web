@@ -198,20 +198,18 @@ class ApiClient {
     return this.request<InstitutionClass[]>("/portal/classes");
   }
 
-  async getClassStudents(classId: string): Promise<StudentProfile[]> {
-    return this.request<StudentProfile[]>(`/portal/classes/${classId}/students`);
+  async getClassStudents(classId: string): Promise<Student[]> {
+    return this.request<Student[]>(`/portal/classes/${classId}/students`);
   }
 
   async getStudentPortfolios(profileId: string): Promise<Portfolio[]> {
     return this.request<Portfolio[]>(`/portal/students/${profileId}/portfolios`);
   }
 
-  async getMyStudents(): Promise<StudentProfile[]> {
+  async getMyStudents(): Promise<Student[]> {
     // Get all students from all accessible classes
     const classes = await this.getMyClasses();
-    const studentsByClass = await Promise.all(
-      classes.map((cls) => this.getClassStudents(cls.id))
-    );
+    const studentsByClass = await Promise.all(classes.map((cls) => this.getClassStudents(cls.id)));
     // Flatten and deduplicate students
     const allStudents = studentsByClass.flat();
     const uniqueStudents = allStudents.filter(
@@ -225,7 +223,7 @@ class ApiClient {
     const classes = await this.getMyClasses();
     const tabletsByClass = await Promise.all(
       classes.map(async (cls) => {
-        const result = await this.getSharedTablets({ institutionClassId: cls.id });
+        const result = await this.getPortalSharedTablets({ classId: cls.id });
         return result.tablets;
       })
     );
@@ -235,6 +233,105 @@ class ApiClient {
       (tablet, index, self) => index === self.findIndex((t) => t.id === tablet.id)
     );
     return uniqueTablets;
+  }
+
+  // Portal: Classes
+  async createPortalClass(payload: CreateClassPayload): Promise<InstitutionClass> {
+    return this.request<InstitutionClass>("/portal/classes", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getPortalClass(classId: string): Promise<InstitutionClass> {
+    return this.request<InstitutionClass>(`/portal/classes/${classId}`);
+  }
+
+  async getPortalClassTeachers(classId: string): Promise<ClassTeacher[]> {
+    return this.request<ClassTeacher[]>(`/portal/classes/${classId}/teachers`);
+  }
+
+  async assignPortalTeacher(classId: string, payload: AssignTeacherPayload): Promise<ClassTeacher> {
+    return this.request<ClassTeacher>(`/portal/classes/${classId}/teachers`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async removePortalTeacher(classId: string, userId: string): Promise<void> {
+    return this.request<void>(`/portal/classes/${classId}/teachers/${userId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Portal: Students
+  async getPortalStudents(params?: {
+    classId?: string;
+  }): Promise<{ students: Student[]; total: number }> {
+    const query = params?.classId ? `?classId=${params.classId}` : "";
+    return this.request<{ students: Student[]; total: number }>(`/portal/students${query}`);
+  }
+
+  async createPortalStudent(payload: CreateStudentPayload): Promise<Student> {
+    return this.request<Student>("/portal/students", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getPortalStudent(studentId: string): Promise<Student> {
+    return this.request<Student>(`/portal/students/${studentId}`);
+  }
+
+  async updatePortalStudent(studentId: string, payload: UpdateStudentPayload): Promise<Student> {
+    return this.request<Student>(`/portal/students/${studentId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Portal: Shared Tablets
+  async getPortalSharedTablets(params?: {
+    classId?: string;
+  }): Promise<{ tablets: SharedTablet[]; total: number }> {
+    const query = params?.classId ? `?classId=${params.classId}` : "";
+    return this.request<{ tablets: SharedTablet[]; total: number }>(
+      `/portal/shared-tablets${query}`
+    );
+  }
+
+  async getPortalSharedTablet(id: string): Promise<SharedTablet> {
+    return this.request<SharedTablet>(`/portal/shared-tablets/${id}`);
+  }
+
+  // Portal: Portfolios
+  async createPortalPortfolio(studentId: string, formData: FormData): Promise<Portfolio> {
+    return this.request<Portfolio>(`/portal/students/${studentId}/portfolios`, {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  async getPortalPortfolio(studentId: string, portfolioId: string): Promise<Portfolio> {
+    return this.request<Portfolio>(`/portal/students/${studentId}/portfolios/${portfolioId}`);
+  }
+
+  // Portal: Members
+  async getPortalMembers(): Promise<InstitutionMember[]> {
+    return this.request<InstitutionMember[]>("/portal/members");
+  }
+
+  async addPortalMember(payload: AddMemberPayload): Promise<InstitutionMember> {
+    return this.request<InstitutionMember>("/portal/members", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async removePortalMember(userId: string): Promise<void> {
+    return this.request<void>(`/portal/members/${userId}`, {
+      method: "DELETE",
+    });
   }
 
   // ========================================
@@ -520,7 +617,6 @@ class ApiClient {
       body: JSON.stringify({ pinCode }),
     });
   }
-
 }
 
 export const api = new ApiClient();

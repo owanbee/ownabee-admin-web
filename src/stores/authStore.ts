@@ -93,7 +93,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               portalInfo,
               user: {
-                id: portalInfo.id,
+                id: portalInfo.userId,
                 email: portalInfo.email,
                 name: portalInfo.name,
                 picture: portalInfo.picture,
@@ -118,7 +118,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             portalInfo,
             user: {
-              id: portalInfo.id,
+              id: portalInfo.userId,
               email: portalInfo.email,
               name: portalInfo.name,
               picture: portalInfo.picture,
@@ -162,10 +162,21 @@ export function useHasInstitutionAccess(): boolean {
   const portalInfo = useAuthStore((state) => state.portalInfo);
   const isOperator = useIsOperator();
 
-  return isOperator || (portalInfo?.institutionRoles?.length ?? 0) > 0;
+  return isOperator || (portalInfo?.institutionMemberships?.length ?? 0) > 0;
 }
 
 export function useCanManagePortfolios(): boolean {
   // All authenticated users with institution roles can manage portfolios
   return useHasInstitutionAccess();
+}
+
+export function useIsInstitutionAdmin(): boolean {
+  const portalInfo = useAuthStore((state) => state.portalInfo);
+  const isOperator = useIsOperator();
+
+  // Operators have all permissions
+  if (isOperator) return true;
+
+  // Use the backend-provided flag
+  return portalInfo?.isInstitutionAdmin ?? false;
 }

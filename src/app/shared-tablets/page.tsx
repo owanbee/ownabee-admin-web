@@ -36,7 +36,7 @@ function SharedTabletsPageContent() {
     try {
       if (selectedClassId) {
         // Fetch tablets for specific class
-        const result = await api.getSharedTablets({ institutionClassId: selectedClassId });
+        const result = await api.getPortalSharedTablets({ classId: selectedClassId });
         setTablets(result.tablets);
       } else {
         // Fetch all tablets from all classes
@@ -62,7 +62,7 @@ function SharedTabletsPageContent() {
 
         // Fetch tablets with URL param
         if (classIdParam) {
-          const result = await api.getSharedTablets({ institutionClassId: classIdParam });
+          const result = await api.getPortalSharedTablets({ classId: classIdParam });
           setTablets(result.tablets);
         } else {
           const data = await api.getMySharedTablets();
@@ -157,7 +157,7 @@ function SharedTabletsPageContent() {
                 )}
                 <p className="mt-3 text-xs text-gray-400">Created {formatDate(tablet.createdAt)}</p>
                 <div className="mt-4">
-                  <Link href={`/admin/shared-tablets/${tablet.id}`}>
+                  <Link href={`/shared-tablets/${tablet.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       <Eye className="mr-2 h-4 w-4" />
                       View Details

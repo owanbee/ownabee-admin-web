@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Tablet, Plus, Pencil, Building2, School } from "lucide-react";
+import { Tablet, Plus, Pencil, Building2, GraduationCap } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -306,7 +306,7 @@ function AdminSharedTabletsPageContent() {
                     <span>{tablet.institutionName}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <School className="h-4 w-4" />
+                    <GraduationCap className="h-4 w-4" />
                     <span className="text-gray-500">{tablet.institutionClassName}</span>
                   </div>
                 </div>
