@@ -243,8 +243,8 @@ export default function InstitutionDetailPage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900">{tablet.name}</p>
-                      {tablet.institutionClassName && (
-                        <p className="text-sm text-gray-500">{tablet.institutionClassName}</p>
+                      {tablet.institutionClass && (
+                        <p className="text-sm text-gray-500">{tablet.institutionClass.name}</p>
                       )}
                     </div>
                     {tablet.username && (

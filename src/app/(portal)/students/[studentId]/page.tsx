@@ -7,11 +7,11 @@ import {
   User,
   GraduationCap,
   Calendar,
-  Building2,
   Hash,
   BookOpen,
   FileText,
   Pencil,
+  Building2,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -166,28 +166,26 @@ export default function StudentDetailPage() {
                   )}
 
                   <div className="space-y-3 mt-4">
-                    {student.institutionClass && (
-                      <>
-                        <div className="flex items-start gap-3">
-                          <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                            <Building2 className="h-4 w-4" />
-                            <span className="font-medium">Institution:</span>
-                          </div>
-                          <span className="text-sm text-gray-900">
-                            {student.institutionClass.institution.name}
-                          </span>
+                    {student.institution && (
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
+                          <Building2 className="h-4 w-4" />
+                          <span className="font-medium">Institution:</span>
                         </div>
+                        <span className="text-sm text-gray-900">{student.institution.name}</span>
+                      </div>
+                    )}
 
-                        <div className="flex items-start gap-3">
-                          <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                            <GraduationCap className="h-4 w-4" />
-                            <span className="font-medium">Class:</span>
-                          </div>
-                          <span className="text-sm text-gray-900">
-                            {student.institutionClass.name}
-                          </span>
+                    {student.institutionClass && (
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
+                          <GraduationCap className="h-4 w-4" />
+                          <span className="font-medium">Class:</span>
                         </div>
-                      </>
+                        <span className="text-sm text-gray-900">
+                          {student.institutionClass.name}
+                        </span>
+                      </div>
                     )}
 
                     {student.studentNumber && (
@@ -235,6 +233,25 @@ export default function StudentDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Side Info */}
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Quick Info</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">User ID</span>
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">{student.userId}</code>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Student ID</span>
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">{student.id}</code>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Edit Student Modal */}
@@ -245,6 +262,13 @@ export default function StudentDetailPage() {
           title="Edit Student"
         >
           <form onSubmit={handleUpdateStudent} className="space-y-4">
+            <Input
+              label="New Password (Optional)"
+              type="password"
+              value={editFormData.password}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, password: e.target.value }))}
+              placeholder="Leave blank to keep current password"
+            />
             <Input
               label="Name"
               value={editFormData.name}
@@ -271,13 +295,6 @@ export default function StudentDetailPage() {
               value={editFormData.memo}
               onChange={(e) => setEditFormData((prev) => ({ ...prev, memo: e.target.value }))}
               placeholder="Enter memo"
-            />
-            <Input
-              label="New Password (Optional)"
-              type="password"
-              value={editFormData.password}
-              onChange={(e) => setEditFormData((prev) => ({ ...prev, password: e.target.value }))}
-              placeholder="Leave blank to keep current password"
             />
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>

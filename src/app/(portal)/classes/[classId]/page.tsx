@@ -12,6 +12,7 @@ import {
   Building2,
   Plus,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -64,8 +65,8 @@ export default function ClassDetailPage() {
 
       // Fetch related data for this class
       const [tabletsData, studentsData, teachersData] = await Promise.all([
-        api.getPortalSharedTablets({ classId }),
-        api.getPortalStudents({ classId }),
+        api.getPortalSharedTablets({ institutionId: classInfo.institutionId, classId }),
+        api.getPortalStudents({ institutionId: classInfo.institutionId, classId }),
         api.getPortalClassTeachers(classId),
       ]);
       setSharedTablets(tabletsData?.tablets ?? []);
@@ -88,7 +89,7 @@ export default function ClassDetailPage() {
 
     setIsSearching(true);
     try {
-      const results = await api.searchUserByEmail(teacherEmail);
+      const results = await api.searchPortalUser(teacherEmail);
       setSearchResults(results);
     } catch (err) {
       console.error("Failed to search user:", err);
@@ -103,7 +104,7 @@ export default function ClassDetailPage() {
     setError(null);
 
     try {
-      await api.assignPortalTeacher(classId, { userId });
+      await api.assignPortalTeacher(classId, { teacherUserId: userId });
       setIsAssignModalOpen(false);
       setTeacherEmail("");
       setSearchResults([]);
@@ -220,11 +221,19 @@ export default function ClassDetailPage() {
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         {/* Students Section */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <UserCircle className="h-5 w-5" />
               Students
             </CardTitle>
+            <Link
+              href={`/students?institutionId=${classData.institutionId}&classId=${classId}`}
+            >
+              <Button size="sm" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage Students
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {students.length === 0 ? (
@@ -265,10 +274,12 @@ export default function ClassDetailPage() {
               Teachers
             </CardTitle>
             {isInstitutionAdmin && (
-              <Button size="sm" onClick={() => setIsAssignModalOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Assign
-              </Button>
+              <Link href={`/members?institutionId=${classData.institutionId}`}>
+                <Button size="sm" variant="outline">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Manage Teachers
+                </Button>
+              </Link>
             )}
           </CardHeader>
           <CardContent>
@@ -311,11 +322,19 @@ export default function ClassDetailPage() {
 
       {/* Shared Tablets Section */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Tablet className="h-5 w-5" />
             Shared Tablets
           </CardTitle>
+          <Link
+            href={`/shared-tablets?institutionId=${classData.institutionId}&classId=${classId}`}
+          >
+            <Button size="sm" variant="outline">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Manage Tablets
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           {sharedTablets.length === 0 ? (

@@ -248,7 +248,7 @@ function AdminSharedTabletsPageContent() {
       {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Filter */}
-      <div className="mb-6 flex flex-col gap-2 max-w-xs">
+      <div className="mb-6 flex gap-4 max-w-xl">
         <Select
           options={institutionOptions}
           value={filterInstitutionId}
@@ -303,11 +303,11 @@ function AdminSharedTabletsPageContent() {
                 <div className="mt-3 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4" />
-                    <span>{tablet.institutionName}</span>
+                    <span>{tablet.institution?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <GraduationCap className="h-4 w-4" />
-                    <span className="text-gray-500">{tablet.institutionClassName}</span>
+                    <span className="text-gray-500">{tablet.institutionClass?.name}</span>
                   </div>
                 </div>
                 {tablet.memo && (

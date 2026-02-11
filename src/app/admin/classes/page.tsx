@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   GraduationCap,
   Plus,
@@ -28,6 +28,7 @@ import type { InstitutionClass, Institution } from "@/types";
 
 function AdminClassesPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [classes, setClasses] = useState<InstitutionClass[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +44,13 @@ function AdminClassesPageContent() {
       setFilterInstitutionId(institutionId);
     }
   }, [searchParams]);
+
+  const handleInstitutionFilterChange = (institutionId: string) => {
+    setFilterInstitutionId(institutionId);
+    const params = new URLSearchParams();
+    if (institutionId) params.set("institutionId", institutionId);
+    router.push(`/admin/classes?${params.toString()}`);
+  };
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -162,7 +170,7 @@ function AdminClassesPageContent() {
         <Select
           options={institutionOptions}
           value={filterInstitutionId}
-          onChange={(e) => setFilterInstitutionId(e.target.value)}
+          onChange={(e) => handleInstitutionFilterChange(e.target.value)}
           className="max-w-xs"
         />
       </div>

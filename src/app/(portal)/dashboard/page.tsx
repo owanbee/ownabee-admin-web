@@ -150,31 +150,6 @@ export default function DashboardPage() {
             </Card>
           </Link>
         )}
-
-        {/* Admin: Student Codes (Operator only) */}
-        {isOperator && (
-          <Link href="/admin/student-codes">
-            <Card className="cursor-pointer transition-shadow hover:shadow-md">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="rounded-lg bg-red-100 p-3">
-                    <KeyRound className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Student Codes</CardTitle>
-                    <CardDescription>Generate and manage codes</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Create student registration codes</span>
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
       </div>
     </DashboardLayout>
   );

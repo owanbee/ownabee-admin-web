@@ -111,18 +111,23 @@ export interface Student {
   memo: string | null;
   institutionId?: string;
   institutionClassId?: string;
-  institutionClass?: {
-    id: string;
-    name: string;
-    institution: {
-      id: string;
-      name: string;
-    };
-  };
   createdAt: string;
   updatedAt?: string;
   _count?: {
     portfolios: number;
+  };
+  // For detail view (nested objects)
+  institution?: {
+    id: string;
+    name: string;
+  };
+  institutionClass?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    name: string;
   };
 }
 
@@ -209,6 +214,10 @@ export interface AssignTeacherPayload {
   userId: string;
 }
 
+export interface AssignPortalTeacherPayload {
+  teacherUserId: string;
+}
+
 // Portfolio Types
 export type PortfolioContentType = "IMAGE" | "PDF" | "AUDIOBOOK";
 
@@ -286,12 +295,23 @@ export interface SharedTablet {
   username: string | null;
   name: string;
   institutionId: string;
-  institutionName?: string;
   institutionClassId: string;
-  institutionClassName?: string;
   memo: string | null;
   createdAt: string;
   updatedAt?: string;
+  // For detail view (nested objects)
+  institution?: {
+    id: string;
+    name: string;
+  };
+  institutionClass?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface CreateSharedTabletPayload {
@@ -307,22 +327,4 @@ export interface UpdateSharedTabletPayload {
   name?: string;
   memo?: string;
   password?: string;
-}
-
-// Legacy type for backward compatibility
-export interface SharedTabletAccount extends SharedTablet {
-  loginId?: string | null;
-  hasPinCode?: boolean;
-  institution?: Institution;
-  user?: User;
-  profileId?: string;
-  // profile?: StudentProfile;
-  deletedAt?: string | null;
-  _count?: {
-    portfolios: number;
-  };
-}
-
-export interface UpdateTabletPinPayload {
-  pinCode: string;
 }

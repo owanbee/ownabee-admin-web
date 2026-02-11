@@ -9,7 +9,6 @@ import type {
   StudentCode,
   CreateStudentCodePayload,
   BatchCreateStudentCodesPayload,
-  StudentProfile,
   InstitutionMember,
   AddMemberPayload,
   ClassTeacher,
@@ -24,6 +23,8 @@ import type {
   Student,
   CreateStudentPayload,
   UpdateStudentPayload,
+  AssignPortalTeacherPayload,
+  InstitutionRole,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -194,45 +195,21 @@ class ApiClient {
     return this.request<PortalUserInfo>("/portal/me");
   }
 
+  // Portal: My Resources
+  async getMyInstitutions(): Promise<Institution[]> {
+    return this.request<Institution[]>("/portal/my-institutions");
+  }
+
   async getMyClasses(): Promise<InstitutionClass[]> {
-    return this.request<InstitutionClass[]>("/portal/classes");
+    return this.request<InstitutionClass[]>("/portal/my-classes");
   }
 
-  async getClassStudents(classId: string): Promise<Student[]> {
-    return this.request<Student[]>(`/portal/classes/${classId}/students`);
+  async getMyStudents(): Promise<{ students: Student[]; total: number }> {
+    return this.request<{ students: Student[]; total: number }>("/portal/my-students");
   }
 
-  async getStudentPortfolios(profileId: string): Promise<Portfolio[]> {
-    return this.request<Portfolio[]>(`/portal/students/${profileId}/portfolios`);
-  }
-
-  async getMyStudents(): Promise<Student[]> {
-    // Get all students from all accessible classes
-    const classes = await this.getMyClasses();
-    const studentsByClass = await Promise.all(classes.map((cls) => this.getClassStudents(cls.id)));
-    // Flatten and deduplicate students
-    const allStudents = studentsByClass.flat();
-    const uniqueStudents = allStudents.filter(
-      (student, index, self) => index === self.findIndex((s) => s.id === student.id)
-    );
-    return uniqueStudents;
-  }
-
-  async getMySharedTablets(): Promise<SharedTablet[]> {
-    // Get all tablets from all accessible classes
-    const classes = await this.getMyClasses();
-    const tabletsByClass = await Promise.all(
-      classes.map(async (cls) => {
-        const result = await this.getPortalSharedTablets({ classId: cls.id });
-        return result.tablets;
-      })
-    );
-    // Flatten and deduplicate tablets
-    const allTablets = tabletsByClass.flat();
-    const uniqueTablets = allTablets.filter(
-      (tablet, index, self) => index === self.findIndex((t) => t.id === tablet.id)
-    );
-    return uniqueTablets;
+  async getMySharedTablets(): Promise<{ tablets: SharedTablet[]; total: number }> {
+    return this.request<{ tablets: SharedTablet[]; total: number }>("/portal/my-shared-tablets");
   }
 
   // Portal: Classes
@@ -247,11 +224,27 @@ class ApiClient {
     return this.request<InstitutionClass>(`/portal/classes/${classId}`);
   }
 
+  async updatePortalClass(classId: string, payload: UpdateClassPayload): Promise<InstitutionClass> {
+    return this.request<InstitutionClass>(`/portal/classes/${classId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deletePortalClass(classId: string): Promise<void> {
+    return this.request<void>(`/portal/classes/${classId}`, {
+      method: "DELETE",
+    });
+  }
+
   async getPortalClassTeachers(classId: string): Promise<ClassTeacher[]> {
     return this.request<ClassTeacher[]>(`/portal/classes/${classId}/teachers`);
   }
 
-  async assignPortalTeacher(classId: string, payload: AssignTeacherPayload): Promise<ClassTeacher> {
+  async assignPortalTeacher(
+    classId: string,
+    payload: AssignPortalTeacherPayload
+  ): Promise<ClassTeacher> {
     return this.request<ClassTeacher>(`/portal/classes/${classId}/teachers`, {
       method: "POST",
       body: JSON.stringify(payload),
@@ -267,8 +260,14 @@ class ApiClient {
   // Portal: Students
   async getPortalStudents(params?: {
     classId?: string;
+    institutionId?: string;
+    institutionClassId?: string;
   }): Promise<{ students: Student[]; total: number }> {
-    const query = params?.classId ? `?classId=${params.classId}` : "";
+    const queryParams = new URLSearchParams();
+    if (params?.classId) queryParams.append("classId", params.classId);
+    if (params?.institutionId) queryParams.append("institutionId", params.institutionId);
+    if (params?.institutionClassId) queryParams.append("institutionClassId", params.institutionClassId);
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
     return this.request<{ students: Student[]; total: number }>(`/portal/students${query}`);
   }
 
@@ -290,18 +289,61 @@ class ApiClient {
     });
   }
 
+  async deletePortalStudent(studentId: string): Promise<void> {
+    return this.request<void>(`/portal/students/${studentId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getStudentPortfolios(
+    studentId: string
+  ): Promise<{ portfolios: Portfolio[]; total: number }> {
+    return this.request<{ portfolios: Portfolio[]; total: number }>(
+      `/portal/students/${studentId}/portfolios`
+    );
+  }
+
   // Portal: Shared Tablets
   async getPortalSharedTablets(params?: {
     classId?: string;
+    institutionId?: string;
+    institutionClassId?: string;
   }): Promise<{ tablets: SharedTablet[]; total: number }> {
-    const query = params?.classId ? `?classId=${params.classId}` : "";
+    const queryParams = new URLSearchParams();
+    if (params?.classId) queryParams.append("classId", params.classId);
+    if (params?.institutionId) queryParams.append("institutionId", params.institutionId);
+    if (params?.institutionClassId) queryParams.append("institutionClassId", params.institutionClassId);
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
     return this.request<{ tablets: SharedTablet[]; total: number }>(
       `/portal/shared-tablets${query}`
     );
   }
 
+  async createPortalSharedTablet(payload: CreateSharedTabletPayload): Promise<SharedTablet> {
+    return this.request<SharedTablet>("/portal/shared-tablets", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
   async getPortalSharedTablet(id: string): Promise<SharedTablet> {
     return this.request<SharedTablet>(`/portal/shared-tablets/${id}`);
+  }
+
+  async updatePortalSharedTablet(
+    id: string,
+    payload: UpdateSharedTabletPayload
+  ): Promise<SharedTablet> {
+    return this.request<SharedTablet>(`/portal/shared-tablets/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deletePortalSharedTablet(id: string): Promise<void> {
+    return this.request<void>(`/portal/shared-tablets/${id}`, {
+      method: "DELETE",
+    });
   }
 
   // Portal: Portfolios
@@ -317,21 +359,36 @@ class ApiClient {
   }
 
   // Portal: Members
-  async getPortalMembers(): Promise<InstitutionMember[]> {
-    return this.request<InstitutionMember[]>("/portal/members");
+  async getPortalMembers(institutionId: string): Promise<InstitutionMember[]> {
+    return this.request<InstitutionMember[]>(
+      `/portal/members?institutionId=${encodeURIComponent(institutionId)}`
+    );
   }
 
-  async addPortalMember(payload: AddMemberPayload): Promise<InstitutionMember> {
+  async addPortalMember(
+    institutionId: string,
+    payload: { memberUserId: string; role: InstitutionRole }
+  ): Promise<InstitutionMember> {
     return this.request<InstitutionMember>("/portal/members", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, institutionId }),
     });
   }
 
-  async removePortalMember(userId: string): Promise<void> {
-    return this.request<void>(`/portal/members/${userId}`, {
-      method: "DELETE",
-    });
+  async removePortalMember(memberUserId: string, institutionId: string): Promise<void> {
+    return this.request<void>(
+      `/portal/members/${memberUserId}?institutionId=${encodeURIComponent(institutionId)}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  // Portal: User Search
+  async searchPortalUser(email: string): Promise<UserSearchResult[]> {
+    return this.request<UserSearchResult[]>(
+      `/portal/users/search?email=${encodeURIComponent(email)}`
+    );
   }
 
   // ========================================

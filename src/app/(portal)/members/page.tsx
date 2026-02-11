@@ -32,6 +32,7 @@ import type {
   UserSearchResult,
   InstitutionRole,
 } from "@/types";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 type TabType = "members" | "teachers";
 
@@ -58,7 +59,7 @@ function MembersPageContent() {
 
     const params = new URLSearchParams();
     if (institutionId) params.set("institutionId", institutionId);
-    router.push(`/admin/members?${params.toString()}`);
+    router.push(`/members?${params.toString()}`);
   };
 
   const handleClassChange = (classId: string) => {
@@ -67,7 +68,7 @@ function MembersPageContent() {
     const params = new URLSearchParams();
     if (selectedInstitutionId) params.set("institutionId", selectedInstitutionId);
     if (classId) params.set("classId", classId);
-    router.push(`/admin/members?${params.toString()}`);
+    router.push(`/members?${params.toString()}`);
   };
 
   // Add Member Modal
@@ -108,8 +109,8 @@ function MembersPageContent() {
         const classIdParam = searchParams.get("classId");
 
         const [institutionsData, classesData] = await Promise.all([
-          api.getInstitutions(),
-          api.getClasses(),
+          api.getMyInstitutions(),
+          api.getMyClasses(),
         ]);
         setInstitutions(institutionsData);
         setClasses(classesData);
@@ -137,7 +138,7 @@ function MembersPageContent() {
   useEffect(() => {
     if (selectedInstitutionId && activeTab === "members") {
       api
-        .getInstitutionMembers(selectedInstitutionId)
+        .getPortalMembers(selectedInstitutionId)
         .then(setMembers)
         .catch((err) => {
           console.error("Failed to fetch members:", err);
@@ -149,7 +150,7 @@ function MembersPageContent() {
   useEffect(() => {
     if (selectedClassId && activeTab === "teachers") {
       api
-        .getClassTeachers(selectedClassId)
+        .getPortalClassTeachers(selectedClassId)
         .then(setTeachers)
         .catch((err) => {
           console.error("Failed to fetch teachers:", err);
@@ -162,7 +163,7 @@ function MembersPageContent() {
 
     setIsSearching(true);
     try {
-      const results = await api.searchUserByEmail(searchEmail);
+      const results = await api.searchPortalUser(searchEmail);
       setSearchResults(results);
     } catch (err) {
       console.error("Failed to search user:", err);
@@ -176,7 +177,7 @@ function MembersPageContent() {
 
     setIsSearchingTeacher(true);
     try {
-      const results = await api.searchUserByEmail(teacherSearchEmail);
+      const results = await api.searchPortalUser(teacherSearchEmail);
       setTeacherSearchResults(results);
     } catch (err) {
       console.error("Failed to search user:", err);
@@ -190,15 +191,19 @@ function MembersPageContent() {
 
     setIsAdding(true);
     try {
-      const newMember = await api.addInstitutionMember(selectedInstitutionId, {
-        userId: selectedUser.id,
+      const newMember = await api.addPortalMember(selectedInstitutionId, {
+        memberUserId: selectedUser.id,
         role: selectedRole,
       });
       setMembers((prev) => [...prev, newMember]);
       handleCloseAddMember();
     } catch (err) {
       console.error("Failed to add member:", err);
-      setError(err instanceof Error ? err.message : "Failed to add member");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to add member. Only institution admin can add members."
+      );
     } finally {
       setIsAdding(false);
     }
@@ -209,14 +214,18 @@ function MembersPageContent() {
 
     setIsAssigning(true);
     try {
-      const newTeacher = await api.assignTeacher(selectedClassId, {
-        userId: selectedTeacher.id,
+      const newTeacher = await api.assignPortalTeacher(selectedClassId, {
+        teacherUserId: selectedTeacher.id,
       });
       setTeachers((prev) => [...prev, newTeacher]);
       handleCloseAssignTeacher();
     } catch (err) {
       console.error("Failed to assign teacher:", err);
-      setError(err instanceof Error ? err.message : "Failed to assign teacher");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to assign teacher. Only class teacher can assign teachers."
+      );
     } finally {
       setIsAssigning(false);
     }
@@ -230,11 +239,11 @@ function MembersPageContent() {
     try {
       if (removeModal.type === "member") {
         const member = removeModal.item as InstitutionMember;
-        await api.removeInstitutionMember(selectedInstitutionId, member.userId);
+        await api.removePortalMember(member.userId, selectedInstitutionId);
         setMembers((prev) => prev.filter((m) => m.userId !== member.userId));
       } else {
         const teacher = removeModal.item as ClassTeacher;
-        await api.unassignTeacher(selectedClassId, teacher.userId);
+        await api.removePortalTeacher(selectedClassId, teacher.userId);
         setTeachers((prev) => prev.filter((t) => t.userId !== teacher.userId));
       }
       setRemoveModal({ open: false, type: "member", item: null, isRemoving: false });
@@ -272,7 +281,7 @@ function MembersPageContent() {
   }
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <PageHeader
         title="Member Management"
         description="Manage institution members and teacher assignments"
@@ -365,10 +374,10 @@ function MembersPageContent() {
                     <TableRow key={member.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar src={member.user?.picture} name={member.user?.name} size="sm" />
+                          <Avatar src={member.user.picture} name={member.user.name} size="sm" />
                           <div>
-                            <p className="font-medium">{member.user?.name || member.user?.email}</p>
-                            <p className="text-sm text-gray-500">{member.user?.email}</p>
+                            <p className="font-medium">{member.user.name || member.user.email}</p>
+                            <p className="text-sm text-gray-500">{member.user.email}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -648,7 +657,7 @@ function MembersPageContent() {
         isDestructive
         isLoading={removeModal.isRemoving}
       />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }
 
@@ -656,9 +665,9 @@ export default function MembersPage() {
   return (
     <Suspense
       fallback={
-        <AdminLayout>
-          <LoadingPage message="Loading..." />
-        </AdminLayout>
+        <DashboardLayout>
+          <LoadingPage message="Loading members..." />
+        </DashboardLayout>
       }
     >
       <MembersPageContent />

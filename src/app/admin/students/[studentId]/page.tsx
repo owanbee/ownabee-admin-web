@@ -213,7 +213,7 @@ export default function StudentDetailPage() {
                             <span className="font-medium">Institution:</span>
                           </div>
                           <span className="text-sm text-gray-900">
-                            {student.institutionClass.institution.name}
+                            {student.institution?.name || ""}
                           </span>
                         </div>
 
@@ -223,7 +223,7 @@ export default function StudentDetailPage() {
                             <span className="font-medium">Class:</span>
                           </div>
                           <span className="text-sm text-gray-900">
-                            {student.institutionClass.name}
+                            {student.institutionClass?.name || ""}
                           </span>
                         </div>
                       </>
@@ -299,6 +299,13 @@ export default function StudentDetailPage() {
       <Modal open={isEditModalOpen} onClose={handleCloseEditModal} title="Edit Student">
         <form onSubmit={handleSubmitEdit} className="space-y-4">
           <Input
+            label="New Password (Optional)"
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+            placeholder="Leave blank to keep current password"
+          />
+          <Input
             label="Name"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
@@ -322,13 +329,6 @@ export default function StudentDetailPage() {
             value={formData.memo}
             onChange={(e) => setFormData((prev) => ({ ...prev, memo: e.target.value }))}
             placeholder="Enter memo (optional)"
-          />
-          <Input
-            label="New Password (Optional)"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-            placeholder="Leave blank to keep current password"
           />
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCloseEditModal}>

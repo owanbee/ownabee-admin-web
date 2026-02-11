@@ -49,7 +49,7 @@ export default function StudentPortfoliosPage() {
   const fetchPortfolios = React.useCallback(async () => {
     try {
       const data = await api.getStudentPortfolios(profileId);
-      setPortfolios(data);
+      setPortfolios(data.portfolios);
     } catch (err) {
       console.error("Failed to fetch portfolios:", err);
       setError(err instanceof Error ? err.message : "Failed to load portfolios");
