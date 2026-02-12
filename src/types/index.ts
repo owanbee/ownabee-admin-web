@@ -23,24 +23,29 @@ export interface AuthResponse {
 
 // Portal Types
 export interface PortalUserInfo {
-  id: string;
+  userId: string;
   email: string;
   name: string | null;
   picture: string | null;
   globalRole: GlobalRole;
-  institutionRoles: InstitutionMembership[];
+  roles: string[];
+  isInstitutionAdmin: boolean;
+  isTeacher: boolean;
+  institutionMemberships: InstitutionMembership[];
+  assignedClasses: AssignedClass[];
 }
 
 export interface InstitutionMembership {
   institutionId: string;
   institutionName: string;
   role: InstitutionRole;
-  assignedClasses?: AssignedClass[];
 }
 
 export interface AssignedClass {
   classId: string;
   className: string;
+  institutionId: string;
+  institutionName: string;
 }
 
 // Institution Types
@@ -106,19 +111,23 @@ export interface Student {
   memo: string | null;
   institutionId?: string;
   institutionClassId?: string;
-  institutionClass?: {
-    id: string;
-    name: string;
-    institution: {
-      id: string;
-      name: string;
-    };
-  };
-  profiles?: StudentProfile[];
   createdAt: string;
   updatedAt?: string;
   _count?: {
     portfolios: number;
+  };
+  // For detail view (nested objects)
+  institution?: {
+    id: string;
+    name: string;
+  };
+  institutionClass?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    name: string;
   };
 }
 
@@ -205,26 +214,37 @@ export interface AssignTeacherPayload {
   userId: string;
 }
 
+export interface AssignPortalTeacherPayload {
+  teacherUserId: string;
+}
+
 // Portfolio Types
 export type PortfolioContentType = "IMAGE" | "PDF" | "AUDIOBOOK";
 
 export interface Portfolio {
   id: string;
   title: string;
-  coverImage: string | null;
+  coverImage?: string | null; // Legacy API
+  coverUrl?: string; // Portal API
   profileId: string;
+  userId?: string; // Portal API
   createdAt: string;
   updatedAt: string;
-  contentItems?: PortfolioContentItem[];
+  contentItems?: PortfolioContentItem[]; // Legacy API
+  contents?: PortfolioContentItem[]; // Portal API
 }
 
 export interface PortfolioContentItem {
   id: string;
   type: PortfolioContentType;
-  url: string;
-  thumbnailUrl: string | null;
-  title: string | null;
+  url?: string; // Legacy API
+  fileUrl?: string; // Portal API
+  thumbnailUrl?: string | null;
+  coverPageUrl?: string; // For audiobooks in Portal API
+  title?: string | null;
+  name?: string; // Portal API
   order: number;
+  audioBookEditionId?: string; // Portal API
 }
 
 export interface CreatePortfolioPayload {
@@ -282,12 +302,23 @@ export interface SharedTablet {
   username: string | null;
   name: string;
   institutionId: string;
-  institutionName?: string;
   institutionClassId: string;
-  institutionClassName?: string;
   memo: string | null;
   createdAt: string;
   updatedAt?: string;
+  // For detail view (nested objects)
+  institution?: {
+    id: string;
+    name: string;
+  };
+  institutionClass?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface CreateSharedTabletPayload {
@@ -303,22 +334,4 @@ export interface UpdateSharedTabletPayload {
   name?: string;
   memo?: string;
   password?: string;
-}
-
-// Legacy type for backward compatibility
-export interface SharedTabletAccount extends SharedTablet {
-  loginId?: string | null;
-  hasPinCode?: boolean;
-  institution?: Institution;
-  user?: User;
-  profileId?: string;
-  profile?: StudentProfile;
-  deletedAt?: string | null;
-  _count?: {
-    portfolios: number;
-  };
-}
-
-export interface UpdateTabletPinPayload {
-  pinCode: string;
 }

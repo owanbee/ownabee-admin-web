@@ -6,14 +6,12 @@ import {
   ArrowLeft,
   Tablet,
   Calendar,
-  Pencil,
-  Trash2,
   Building2,
-  Hash,
   FileText,
   GraduationCap,
+  Pencil,
 } from "lucide-react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,12 +20,14 @@ import { Input } from "@/components/ui/input";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
-import type { SharedTablet, UpdateSharedTabletPayload } from "@/types";
+import { useAuthStore } from "@/stores/authStore";
+import type { SharedTablet } from "@/types";
 
 export default function SharedTabletDetailPage() {
   const params = useParams();
   const router = useRouter();
   const tabletId = params.id as string;
+  const portalInfo = useAuthStore((state) => state.portalInfo);
 
   const [tablet, setTablet] = React.useState<SharedTablet | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -35,27 +35,25 @@ export default function SharedTabletDetailPage() {
 
   // Edit modal state
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [editFormData, setEditFormData] = React.useState({
     name: "",
     memo: "",
     password: "",
   });
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Delete confirmation modal
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  // Check if user can edit (has access to this tablet's institution)
+  const canEdit = React.useMemo(() => {
+    if (!tablet || !portalInfo?.institutionMemberships) return false;
+    return portalInfo.institutionMemberships.some(
+      (membership) => membership.institutionId === tablet.institutionId
+    );
+  }, [tablet, portalInfo]);
 
   const fetchTablet = React.useCallback(async () => {
     try {
-      setIsLoading(true);
-      const data = await api.getSharedTablet(tabletId);
+      const data = await api.getPortalSharedTablet(tabletId);
       setTablet(data);
-      setFormData({
-        name: data.name,
-        memo: data.memo || "",
-        password: "",
-      });
     } catch (err) {
       console.error("Failed to fetch tablet:", err);
       setError(err instanceof Error ? err.message : "Failed to load tablet");
@@ -70,108 +68,80 @@ export default function SharedTabletDetailPage() {
 
   const handleOpenEditModal = () => {
     if (tablet) {
-      setFormData({
+      setEditFormData({
         name: tablet.name,
         memo: tablet.memo || "",
         password: "",
       });
+      setIsEditModalOpen(true);
     }
-    setIsEditModalOpen(true);
   };
 
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setFormData({ name: "", memo: "", password: "" });
-  };
-
-  const handleSubmitEdit = async (e: React.FormEvent) => {
+  const handleUpdateTablet = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsUpdating(true);
     setError(null);
 
     try {
-      await api.updateSharedTablet(tabletId, {
-        name: formData.name,
-        ...(formData.memo && { memo: formData.memo }),
-        ...(formData.password && { password: formData.password }),
+      await api.updatePortalSharedTablet(tabletId, {
+        name: editFormData.name,
+        ...(editFormData.memo && { memo: editFormData.memo }),
+        ...(editFormData.password && { password: editFormData.password }),
       });
-      handleCloseEditModal();
-      fetchTablet();
+      setIsEditModalOpen(false);
+      await fetchTablet();
     } catch (err) {
       console.error("Failed to update tablet:", err);
       setError(err instanceof Error ? err.message : "Failed to update tablet");
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleOpenDeleteModal = () => {
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCloseDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setError(null);
-
-    try {
-      await api.deleteSharedTablet(tabletId);
-      handleCloseDeleteModal();
-      router.push("/admin/shared-tablets");
-    } catch (err) {
-      console.error("Failed to delete tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete tablet");
-    } finally {
-      setIsDeleting(false);
+      setIsUpdating(false);
     }
   };
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <DashboardLayout>
         <LoadingPage message="Loading tablet details..." />
-      </AdminLayout>
+      </DashboardLayout>
     );
   }
 
   if (!tablet) {
     return (
-      <AdminLayout>
+      <DashboardLayout>
         <div className="flex flex-col items-center justify-center py-12">
           <Tablet className="h-12 w-12 text-gray-400 mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Tablet not found</h2>
           <p className="text-gray-500 mb-6">The shared tablet you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push("/admin/shared-tablets")}>
+          <Button onClick={() => router.push("/shared-tablets")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Shared Tablets
           </Button>
         </div>
-      </AdminLayout>
+      </DashboardLayout>
     );
   }
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <PageHeader
         title={tablet.name}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Admin" },
-          { label: "Shared Tablets", href: "/admin/shared-tablets" },
+          { label: "Shared Tablets", href: "/shared-tablets" },
           { label: tablet.name },
         ]}
         action={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleOpenEditModal}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-            <Button variant="destructive" onClick={handleOpenDeleteModal}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+            {canEdit && (
+              <Button onClick={handleOpenEditModal}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => router.push("/shared-tablets")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
             </Button>
           </div>
         }
@@ -195,25 +165,27 @@ export default function SharedTabletDetailPage() {
                   )}
 
                   <div className="space-y-3 mt-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                        <Building2 className="h-4 w-4" />
-                        <span className="font-medium">Institution:</span>
+                    {tablet.institution && (
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
+                          <Building2 className="h-4 w-4" />
+                          <span className="font-medium">Institution:</span>
+                        </div>
+                        <span className="text-sm text-gray-900">{tablet.institution.name}</span>
                       </div>
-                      <span className="text-sm text-gray-900">
-                        {tablet.institution?.name || ""}
-                      </span>
-                    </div>
+                    )}
 
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
-                        <GraduationCap className="h-4 w-4" />
-                        <span className="font-medium">Class:</span>
+                    {tablet.institutionClass && (
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 min-w-[120px]">
+                          <GraduationCap className="h-4 w-4" />
+                          <span className="font-medium">Class:</span>
+                        </div>
+                        <span className="text-sm text-gray-900">
+                          {tablet.institutionClass.name}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-900">
-                        {tablet.institutionClass?.name || ""}
-                      </span>
-                    </div>
+                    )}
 
                     {tablet.memo && (
                       <div className="flex items-start gap-3">
@@ -274,56 +246,44 @@ export default function SharedTabletDetailPage() {
       </div>
 
       {/* Edit Modal */}
-      <Modal open={isEditModalOpen} onClose={handleCloseEditModal} title="Edit Shared Tablet">
-        <form onSubmit={handleSubmitEdit} className="space-y-4">
-          <Input
-            label="New Password (Optional)"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-            placeholder="Leave blank to keep current password"
-          />
-          <Input
-            label="Name"
-            value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Enter tablet name"
-            required
-          />
-          <Input
-            label="Memo"
-            value={formData.memo}
-            onChange={(e) => setFormData((prev) => ({ ...prev, memo: e.target.value }))}
-            placeholder="Enter memo (optional)"
-          />
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={handleCloseEditModal}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isSubmitting}>
-              Update
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} title="Delete Shared Tablet">
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Are you sure you want to delete <strong>{tablet.name}</strong>? This action cannot be
-            undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={handleCloseDeleteModal}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete} isLoading={isDeleting}>
-              Delete Tablet
-            </Button>
-          </div>
-        </div>
-      </Modal>
-    </AdminLayout>
+      {canEdit && (
+        <Modal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title="Edit Shared Tablet"
+        >
+          <form onSubmit={handleUpdateTablet} className="space-y-4">
+            <Input
+              label="New Password (Optional)"
+              type="password"
+              value={editFormData.password}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, password: e.target.value }))}
+              placeholder="Leave blank to keep current password"
+            />
+            <Input
+              label="Name"
+              value={editFormData.name}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter tablet name (required)"
+              required
+            />
+            <Input
+              label="Memo"
+              value={editFormData.memo}
+              onChange={(e) => setEditFormData((prev) => ({ ...prev, memo: e.target.value }))}
+              placeholder="Enter memo (optional)"
+            />
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" isLoading={isUpdating}>
+                Update
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </DashboardLayout>
   );
 }

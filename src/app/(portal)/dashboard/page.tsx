@@ -2,14 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  GraduationCap,
-  Building2,
-  Users,
-  KeyRound,
-  FolderOpen,
-  ArrowRight,
-} from "lucide-react";
+import { GraduationCap, Building2, Users, KeyRound, FolderOpen, ArrowRight } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +14,8 @@ export default function DashboardPage() {
   const { user, portalInfo } = useAuthStore();
   const isOperator = useIsOperator();
 
-  const institutionRoles = portalInfo?.institutionRoles || [];
+  const institutionMemberships = portalInfo?.institutionMemberships || [];
+  const assignedClasses = portalInfo?.assignedClasses || [];
 
   return (
     <DashboardLayout>
@@ -45,9 +39,9 @@ export default function DashboardPage() {
                   <Badge variant={isOperator ? "default" : "secondary"}>
                     {getRoleDisplayName(user?.globalRole || "USER")}
                   </Badge>
-                  {institutionRoles.map((role) => (
-                    <Badge key={role.institutionId} variant="outline">
-                      {role.institutionName}: {getRoleDisplayName(role.role)}
+                  {institutionMemberships.map((membership) => (
+                    <Badge key={membership.institutionId} variant="outline">
+                      {getRoleDisplayName(membership.role)} @ {membership.institutionName}
                     </Badge>
                   ))}
                 </div>
@@ -76,11 +70,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  {institutionRoles.reduce(
-                    (acc, role) => acc + (role.assignedClasses?.length || 0),
-                    0
-                  )}{" "}
-                  classes accessible
+                  {assignedClasses.length} classes accessible
                 </span>
                 <ArrowRight className="h-5 w-5 text-gray-400" />
               </div>
@@ -104,9 +94,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">
-                  Select a class to view portfolios
-                </span>
+                <span className="text-sm text-gray-500">Select a class to view portfolios</span>
                 <ArrowRight className="h-5 w-5 text-gray-400" />
               </div>
             </CardContent>
@@ -130,9 +118,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    Create and manage institutions
-                  </span>
+                  <span className="text-sm text-gray-500">Create and manage institutions</span>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </div>
               </CardContent>
@@ -157,36 +143,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    Assign roles and manage access
-                  </span>
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
-
-        {/* Admin: Student Codes (Operator only) */}
-        {isOperator && (
-          <Link href="/admin/student-codes">
-            <Card className="cursor-pointer transition-shadow hover:shadow-md">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="rounded-lg bg-red-100 p-3">
-                    <KeyRound className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Student Codes</CardTitle>
-                    <CardDescription>Generate and manage codes</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    Create student registration codes
-                  </span>
+                  <span className="text-sm text-gray-500">Assign roles and manage access</span>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </div>
               </CardContent>

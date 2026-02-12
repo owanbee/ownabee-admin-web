@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { School, Plus, Pencil, Building2, Tablet, UserCheck, UserCircle } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  GraduationCap,
+  Plus,
+  Pencil,
+  Building2,
+  Tablet,
+  UserCheck,
+  UserCircle,
+} from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +28,7 @@ import type { InstitutionClass, Institution } from "@/types";
 
 function AdminClassesPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [classes, setClasses] = useState<InstitutionClass[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +44,13 @@ function AdminClassesPageContent() {
       setFilterInstitutionId(institutionId);
     }
   }, [searchParams]);
+
+  const handleInstitutionFilterChange = (institutionId: string) => {
+    setFilterInstitutionId(institutionId);
+    const params = new URLSearchParams();
+    if (institutionId) params.set("institutionId", institutionId);
+    router.push(`/admin/classes?${params.toString()}`);
+  };
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -154,14 +170,14 @@ function AdminClassesPageContent() {
         <Select
           options={institutionOptions}
           value={filterInstitutionId}
-          onChange={(e) => setFilterInstitutionId(e.target.value)}
+          onChange={(e) => handleInstitutionFilterChange(e.target.value)}
           className="max-w-xs"
         />
       </div>
 
       {classes.length === 0 ? (
         <EmptyState
-          icon={School}
+          icon={GraduationCap}
           title="No classes yet"
           description={
             filterInstitutionId
@@ -183,7 +199,7 @@ function AdminClassesPageContent() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-blue-100 p-2">
-                      <School className="h-5 w-5 text-blue-600" />
+                      <GraduationCap className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{cls.name}</h3>

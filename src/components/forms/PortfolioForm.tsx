@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { api } from "@/lib/api";
-import type { Portfolio, PortfolioContentType } from "@/types";
+import type { Portfolio, PortfolioContentType, PortfolioContentItem } from "@/types";
 
 interface ContentItem {
   id: string;
@@ -15,12 +15,12 @@ interface ContentItem {
   file?: File;
   url?: string;
   title: string;
-  audiobookId?: string;
+  audiobookId?: string | undefined;
 }
 
 interface PortfolioFormProps {
   portfolioId?: string;
-  profileId: string;
+  studentId: string;
   initialData?: Portfolio;
   onSuccess: () => void;
   onCancel: () => void;
@@ -29,12 +29,11 @@ interface PortfolioFormProps {
 const contentTypeOptions = [
   { value: "IMAGE", label: "Image" },
   { value: "PDF", label: "PDF Document" },
-  { value: "AUDIOBOOK", label: "Audiobook" },
 ];
 
 export function PortfolioForm({
   portfolioId,
-  profileId,
+  studentId,
   initialData,
   onSuccess,
   onCancel,
@@ -42,16 +41,22 @@ export function PortfolioForm({
   const [title, setTitle] = React.useState(initialData?.title || "");
   const [coverImage, setCoverImage] = React.useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = React.useState<string | null>(
-    initialData?.coverImage || null
+    initialData?.coverImage || initialData?.coverUrl || null
   );
-  const [contentItems, setContentItems] = React.useState<ContentItem[]>(
-    initialData?.contentItems?.map((item) => ({
+
+  // Normalize content items from either API format
+  const normalizeContentItems = React.useCallback((): ContentItem[] => {
+    const items = initialData?.contentItems || initialData?.contents || [];
+    return items.map((item) => ({
       id: item.id,
       type: item.type,
-      url: item.url,
-      title: item.title || "",
-    })) || []
-  );
+      url: item.url || item.fileUrl || "",
+      title: item.title || item.name || "",
+      audiobookId: item.audioBookEditionId,
+    }));
+  }, [initialData]);
+
+  const [contentItems, setContentItems] = React.useState<ContentItem[]>(normalizeContentItems());
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -90,17 +95,13 @@ export function PortfolioForm({
     value: string | File | PortfolioContentType
   ) => {
     setContentItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
   };
 
   const handleContentFileChange = (id: string, file: File | null) => {
     if (file) {
-      setContentItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, file } : item))
-      );
+      setContentItems((prev) => prev.map((item) => (item.id === id ? { ...item, file } : item)));
     }
   };
 
@@ -111,11 +112,8 @@ export function PortfolioForm({
 
     try {
       const formData = new FormData();
-      if (portfolioId) {
-        formData.append("id", portfolioId);
-      }
       formData.append("title", title);
-      formData.append("profileId", profileId);
+      formData.append("coverComponents", JSON.stringify({})); // Empty object for now
 
       if (coverImage) {
         formData.append("cover", coverImage);
@@ -143,9 +141,11 @@ export function PortfolioForm({
       });
 
       if (portfolioId) {
-        await api.updatePortfolio(portfolioId, formData);
+        // Add portfolio id for update
+        formData.append("id", portfolioId);
+        await api.updatePortalPortfolio(studentId, portfolioId, formData);
       } else {
-        await api.createPortfolio(formData);
+        await api.createPortalPortfolio(studentId, formData);
       }
 
       onSuccess();
@@ -163,18 +163,30 @@ export function PortfolioForm({
         return Image;
       case "PDF":
         return FileText;
-      case "AUDIOBOOK":
-        return Book;
+      default:
+        return FileText;
     }
+  };
+
+  const getDisplayFileName = (url: string, maxLength: number = 30): string => {
+    // Extract filename from URL
+    const fileName = url.split('/').pop() || url;
+
+    // Remove file extension
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const nameWithoutExt = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+
+    // Truncate if too long
+    if (nameWithoutExt.length > maxLength) {
+      return nameWithoutExt.substring(0, maxLength) + '...';
+    }
+
+    return nameWithoutExt;
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Basic Info */}
       <Card>
@@ -192,9 +204,7 @@ export function PortfolioForm({
 
           {/* Cover Image */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Cover Image
-            </label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Cover Image</label>
             <div className="mt-1 flex items-center gap-4">
               {coverImagePreview ? (
                 <div className="relative">
@@ -260,98 +270,94 @@ export function PortfolioForm({
             contentItems.map((item, index) => {
               const Icon = getContentIcon(item.type);
               return (
-                <div
-                  key={item.id}
-                  className="flex items-start gap-4 rounded-lg border p-4"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                    <Icon className="h-5 w-5 text-gray-500" />
-                  </div>
-
-                  <div className="flex-1 space-y-3">
-                    <div className="flex gap-4">
-                      <Select
-                        options={contentTypeOptions}
-                        value={item.type}
-                        onChange={(e) =>
-                          handleContentItemChange(
-                            item.id,
-                            "type",
-                            e.target.value as PortfolioContentType
-                          )
-                        }
-                        className="w-40"
-                      />
-                      <Input
-                        placeholder="Item title (optional)"
-                        value={item.title}
-                        onChange={(e) =>
-                          handleContentItemChange(item.id, "title", e.target.value)
-                        }
-                        className="flex-1"
-                      />
+                <div key={item.id} className="rounded-lg border p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                      <Icon className="h-5 w-5 text-gray-500" />
                     </div>
 
-                    {item.type !== "AUDIOBOOK" && (
+                    <div className="flex-1 space-y-3">
+                      {/* File Type Selection */}
                       <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-700">
+                          File Type
+                        </label>
+                        <Select
+                          options={contentTypeOptions}
+                          value={item.type}
+                          onChange={(e) =>
+                            handleContentItemChange(
+                              item.id,
+                              "type",
+                              e.target.value as PortfolioContentType
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Title */}
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-700">
+                          Title (optional)
+                        </label>
+                        <Input
+                          placeholder={`Enter ${item.type.toLowerCase()} title`}
+                          value={item.title}
+                          onChange={(e) => handleContentItemChange(item.id, "title", e.target.value)}
+                        />
+                      </div>
+
+                      {/* File Upload */}
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-700">
+                          File
+                        </label>
                         {item.url && !item.file ? (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span className="truncate">{item.url}</span>
+                          <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2">
+                            <FileText className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                            <span className="flex-1 text-sm text-gray-600" title={item.url}>
+                              {getDisplayFileName(item.url)}
+                            </span>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleContentItemChange(item.id, "url", "")
-                              }
+                              onClick={() => handleContentItemChange(item.id, "url", "")}
                             >
                               Change
                             </Button>
                           </div>
                         ) : (
-                          <input
-                            type="file"
-                            accept={item.type === "IMAGE" ? "image/*" : ".pdf"}
-                            onChange={(e) =>
-                              handleContentFileChange(
-                                item.id,
-                                e.target.files?.[0] || null
-                              )
-                            }
-                            className="text-sm"
-                          />
-                        )}
-                        {item.file && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            Selected: {item.file.name}
-                          </p>
+                          <>
+                            <input
+                              type="file"
+                              accept={item.type === "IMAGE" ? "image/*" : "application/pdf"}
+                              onChange={(e) =>
+                                handleContentFileChange(item.id, e.target.files?.[0] || null)
+                              }
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-orange-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-100"
+                            />
+                            {item.file && (
+                              <p className="mt-1 text-xs text-gray-500" title={item.file.name}>
+                                Selected: {getDisplayFileName(item.file.name, 40)}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
-                    )}
+                    </div>
 
-                    {item.type === "AUDIOBOOK" && (
-                      <Input
-                        placeholder="Audiobook ID"
-                        value={item.audiobookId || ""}
-                        onChange={(e) =>
-                          handleContentItemChange(
-                            item.id,
-                            "audiobookId",
-                            e.target.value
-                          )
-                        }
-                      />
-                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="flex-shrink-0"
+                      onClick={() => handleRemoveContentItem(item.id)}
+                    >
+                      <X className="h-4 w-4 text-red-500" />
+                    </Button>
                   </div>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveContentItem(item.id)}
-                  >
-                    <X className="h-4 w-4 text-red-500" />
-                  </Button>
                 </div>
               );
             })

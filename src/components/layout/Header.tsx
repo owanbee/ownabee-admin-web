@@ -11,9 +11,16 @@ import { getRoleDisplayName } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, portalInfo, logout } = useAuthStore();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Get unique institution roles
+  const institutionRoles = React.useMemo(() => {
+    if (!portalInfo?.institutionMemberships) return [];
+    const roles = new Set(portalInfo.institutionMemberships.map((r) => r.role));
+    return Array.from(roles);
+  }, [portalInfo]);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -52,19 +59,36 @@ export function Header() {
             <p className="text-sm font-medium text-gray-900">
               {user.name || user.email}
             </p>
-            <Badge variant="secondary" className="mt-0.5">
-              {getRoleDisplayName(user.globalRole)}
-            </Badge>
+            <div className="flex flex-wrap gap-1 mt-0.5">
+              <Badge variant="secondary">
+                {getRoleDisplayName(user.globalRole)}
+              </Badge>
+              {institutionRoles.map((role) => (
+                <Badge key={role} variant="default" className="text-xs">
+                  {role === "INSTITUTION_ADMIN" ? "Admin" : "Teacher"}
+                </Badge>
+              ))}
+            </div>
           </div>
           <ChevronDown className="h-4 w-4 text-gray-400" />
         </button>
 
         {/* Dropdown menu */}
         {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-56 rounded-md border bg-white py-1 shadow-lg">
+          <div className="absolute right-0 mt-2 w-64 rounded-md border bg-white py-1 shadow-lg">
             <div className="border-b px-4 py-3">
               <p className="text-sm font-medium text-gray-900">{user.name}</p>
               <p className="text-sm text-gray-500">{user.email}</p>
+              <div className="flex flex-wrap gap-1 mt-2">
+                <Badge variant="secondary" className="text-xs">
+                  {getRoleDisplayName(user.globalRole)}
+                </Badge>
+                {portalInfo?.institutionMemberships?.map((membership) => (
+                  <Badge key={membership.institutionId} variant="default" className="text-xs">
+                    {membership.role === "INSTITUTION_ADMIN" ? "Admin" : "Teacher"} @ {membership.institutionName}
+                  </Badge>
+                ))}
+              </div>
             </div>
             <button
               onClick={handleLogout}

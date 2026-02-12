@@ -49,7 +49,7 @@ export default function StudentPortfoliosPage() {
   const fetchPortfolios = React.useCallback(async () => {
     try {
       const data = await api.getStudentPortfolios(profileId);
-      setPortfolios(data);
+      // setPortfolios(data.portfolios);
     } catch (err) {
       console.error("Failed to fetch portfolios:", err);
       setError(err instanceof Error ? err.message : "Failed to load portfolios");
@@ -69,9 +69,7 @@ export default function StudentPortfoliosPage() {
 
     try {
       await api.deletePortfolio(deleteModal.portfolio.id);
-      setPortfolios((prev) =>
-        prev.filter((p) => p.id !== deleteModal.portfolio?.id)
-      );
+      setPortfolios((prev) => prev.filter((p) => p.id !== deleteModal.portfolio?.id));
       setDeleteModal({ open: false, portfolio: null, isDeleting: false });
     } catch (err) {
       console.error("Failed to delete portfolio:", err);
@@ -109,11 +107,7 @@ export default function StudentPortfoliosPage() {
         }
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {portfolios.length === 0 ? (
         <EmptyState
@@ -149,9 +143,7 @@ export default function StudentPortfoliosPage() {
               </div>
 
               <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-900 line-clamp-1">
-                  {portfolio.title}
-                </h3>
+                <h3 className="font-semibold text-gray-900 line-clamp-1">{portfolio.title}</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Updated {formatDate(portfolio.updatedAt)}
                 </p>
@@ -159,17 +151,17 @@ export default function StudentPortfoliosPage() {
                 {/* Content Type Badges */}
                 {portfolio.contentItems && portfolio.contentItems.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1">
-                    {Array.from(
-                      new Set(portfolio.contentItems.map((item) => item.type))
-                    ).map((type) => {
-                      const Icon = contentTypeIcons[type];
-                      return (
-                        <Badge key={type} variant="secondary" className="text-xs">
-                          <Icon className="mr-1 h-3 w-3" />
-                          {contentTypeLabels[type]}
-                        </Badge>
-                      );
-                    })}
+                    {Array.from(new Set(portfolio.contentItems.map((item) => item.type))).map(
+                      (type) => {
+                        const Icon = contentTypeIcons[type];
+                        return (
+                          <Badge key={type} variant="secondary" className="text-xs">
+                            <Icon className="mr-1 h-3 w-3" />
+                            {contentTypeLabels[type]}
+                          </Badge>
+                        );
+                      }
+                    )}
                   </div>
                 )}
 
@@ -207,9 +199,7 @@ export default function StudentPortfoliosPage() {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         open={deleteModal.open}
-        onClose={() =>
-          setDeleteModal({ open: false, portfolio: null, isDeleting: false })
-        }
+        onClose={() => setDeleteModal({ open: false, portfolio: null, isDeleting: false })}
         onConfirm={handleDelete}
         title="Delete Portfolio"
         description={`Are you sure you want to delete "${deleteModal.portfolio?.title}"? This action cannot be undone.`}

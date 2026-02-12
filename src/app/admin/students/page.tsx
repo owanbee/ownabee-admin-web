@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { School, Plus, Pencil, Building2, Users, User } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Building2, Users, User } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -142,7 +142,7 @@ function AdminStudentsPageContent() {
         name: std.name,
         username: std.username || "",
         password: "",
-        institutionId: std.institutionClass?.institution.id || "",
+        institutionId: std.institution?.id || "",
         institutionClassId: std.institutionClass?.id || "",
         studentNumber: std.studentNumber || "",
         grade: std.grade || "",
@@ -261,7 +261,7 @@ function AdminStudentsPageContent() {
       {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Filter */}
-      <div className="mb-6 flex flex-col gap-2 max-w-xs">
+      <div className="mb-6 flex gap-4 max-w-xl">
         <Select
           options={institutionOptions}
           value={filterInstitutionId}
@@ -278,7 +278,7 @@ function AdminStudentsPageContent() {
 
       {students.length === 0 ? (
         <EmptyState
-          icon={School}
+          icon={GraduationCap}
           title="No students yet"
           description={
             filterInstitutionId
@@ -311,18 +311,20 @@ function AdminStudentsPageContent() {
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </div>
-                {std.institutionClass && (
-                  <div className="mt-3 text-sm text-gray-600">
+                <div className="mt-3 text-sm text-gray-600">
+                  {std.institution && (
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
-                      <span>{std.institutionClass.institution.name}</span>
+                      <span>{std.institution.name}</span>
                     </div>
+                  )}
+                  {std.institutionClass && (
                     <div className="flex items-center gap-2 mt-1">
-                      <School className="h-4 w-4" />
+                      <GraduationCap className="h-4 w-4" />
                       <span className="text-gray-500">{std.institutionClass.name}</span>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 {std.studentNumber && (
                   <p className="mt-2 text-sm text-gray-600">Student #: {std.studentNumber}</p>
                 )}
@@ -401,7 +403,7 @@ function AdminStudentsPageContent() {
                   setFormData((prev) => ({ ...prev, institutionClassId: e.target.value }))
                 }
                 required
-                disabled={!formData.institutionId}
+                // disabled={!formData.institutionId}
               />
               <Input
                 label="ID"

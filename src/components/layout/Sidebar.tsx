@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   GraduationCap,
   Building2,
-  School,
   KeyRound,
   Users,
   FolderOpen,
@@ -20,7 +19,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuthStore, useIsOperator } from "@/stores/authStore";
+import { useAuthStore, useIsOperator, useIsInstitutionAdmin } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 
 interface NavItem {
@@ -28,6 +27,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   operatorOnly?: boolean;
+  institutionAdminOnly?: boolean;
 }
 
 const mainNavItems: NavItem[] = [
@@ -35,11 +35,12 @@ const mainNavItems: NavItem[] = [
   { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/students", label: "Students", icon: UserCircle },
   { href: "/shared-tablets", label: "Shared Tablets", icon: Tablet },
+  { href: "/members", label: "Members", icon: Users, institutionAdminOnly: true },
 ];
 
 const adminNavItems: NavItem[] = [
   { href: "/admin/institutions", label: "Institutions", icon: Building2, operatorOnly: true },
-  { href: "/admin/classes", label: "Classes", icon: School, operatorOnly: true },
+  { href: "/admin/classes", label: "Classes", icon: GraduationCap, operatorOnly: true },
   { href: "/admin/students", label: "Students", icon: UserCircle, operatorOnly: true },
   { href: "/admin/shared-tablets", label: "Shared Tablets", icon: Tablet, operatorOnly: true },
   { href: "/admin/members", label: "Members", icon: Users, operatorOnly: true },
@@ -50,8 +51,12 @@ const adminNavItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const isOperator = useIsOperator();
+  const isInstitutionAdmin = useIsInstitutionAdmin();
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
 
+  const filteredMainItems = mainNavItems.filter(
+    (item) => !item.institutionAdminOnly || isInstitutionAdmin
+  );
   const filteredAdminItems = adminNavItems.filter((item) => !item.operatorOnly || isOperator);
 
   const NavLink = ({ item }: { item: NavItem }) => {
@@ -89,7 +94,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {/* Main navigation */}
         <div className="space-y-1">
-          {mainNavItems.map((item) => (
+          {filteredMainItems.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
         </div>
