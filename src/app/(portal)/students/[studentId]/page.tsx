@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -12,6 +13,8 @@ import {
   FileText,
   Pencil,
   Building2,
+  ExternalLink,
+  FolderOpen,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -152,7 +155,7 @@ export default function StudentDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Info Card */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
@@ -230,6 +233,27 @@ export default function StudentDetailPage() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Portfolios Section */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-sm font-semibold text-gray-900">Portfolios</h3>
+                </div>
+                <Link href={`/students/${studentId}/portfolios`}>
+                  <Button size="sm" variant="outline">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Manage Portfolios
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-sm text-gray-500">
+                View and manage portfolios for this student
+              </p>
             </CardContent>
           </Card>
         </div>

@@ -224,7 +224,7 @@ function MembersPageContent() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to assign teacher. Only class teacher can assign teachers."
+          : "Failed to assign teacher. User must be a member of the institution first."
       );
     } finally {
       setIsAssigning(false);

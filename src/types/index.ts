@@ -224,20 +224,27 @@ export type PortfolioContentType = "IMAGE" | "PDF" | "AUDIOBOOK";
 export interface Portfolio {
   id: string;
   title: string;
-  coverImage: string | null;
+  coverImage?: string | null; // Legacy API
+  coverUrl?: string; // Portal API
   profileId: string;
+  userId?: string; // Portal API
   createdAt: string;
   updatedAt: string;
-  contentItems?: PortfolioContentItem[];
+  contentItems?: PortfolioContentItem[]; // Legacy API
+  contents?: PortfolioContentItem[]; // Portal API
 }
 
 export interface PortfolioContentItem {
   id: string;
   type: PortfolioContentType;
-  url: string;
-  thumbnailUrl: string | null;
-  title: string | null;
+  url?: string; // Legacy API
+  fileUrl?: string; // Portal API
+  thumbnailUrl?: string | null;
+  coverPageUrl?: string; // For audiobooks in Portal API
+  title?: string | null;
+  name?: string; // Portal API
   order: number;
+  audioBookEditionId?: string; // Portal API
 }
 
 export interface CreatePortfolioPayload {

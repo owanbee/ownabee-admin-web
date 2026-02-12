@@ -295,14 +295,6 @@ class ApiClient {
     });
   }
 
-  async getStudentPortfolios(
-    studentId: string
-  ): Promise<{ portfolios: Portfolio[]; total: number }> {
-    return this.request<{ portfolios: Portfolio[]; total: number }>(
-      `/portal/students/${studentId}/portfolios`
-    );
-  }
-
   // Portal: Shared Tablets
   async getPortalSharedTablets(params?: {
     classId?: string;
@@ -347,7 +339,22 @@ class ApiClient {
   }
 
   // Portal: Portfolios
+  async getStudentPortfolios(studentId: string): Promise<Portfolio[]> {
+    return this.request<Portfolio[]>(`/portal/students/${studentId}/portfolios`);
+  }
+
   async createPortalPortfolio(studentId: string, formData: FormData): Promise<Portfolio> {
+    return this.request<Portfolio>(`/portal/students/${studentId}/portfolios`, {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  async updatePortalPortfolio(
+    studentId: string,
+    portfolioId: string,
+    formData: FormData
+  ): Promise<Portfolio> {
     return this.request<Portfolio>(`/portal/students/${studentId}/portfolios`, {
       method: "POST",
       body: formData,

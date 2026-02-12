@@ -160,13 +160,13 @@ Authorization: Bearer {token}
       ],
       "institutionId": "string",
       "institutionClassId": "string",
+      "institution": {
+        "id": "string",
+        "name": "string"
+      },
       "institutionClass": {
         "id": "string",
-        "name": "string",
-        "institution": {
-          "id": "string",
-          "name": "string"
-        }
+        "name": "string"
       },
       "createdAt": "2024-01-01T00:00:00.000Z"
     }
@@ -204,11 +204,7 @@ Authorization: Bearer {token}
       },
       "institutionClass": {
         "id": "string",
-        "name": "string",
-        "institution": {
-          "id": "string",
-          "name": "string"
-        }
+        "name": "string"
       },
       "memo": "string | null",
       "createdAt": "2024-01-01T00:00:00.000Z"
@@ -500,14 +496,19 @@ Content-Type: application/json
 }
 ```
 
-### GET /api/portal/students?classId=xxx
+### GET /api/portal/students?institutionId=xxx&institutionClassId=yyy
 
-특정 반의 학생 목록 조회
+학생 목록 조회 (기관별 또는 반별)
+
+**쿼리 파라미터**:
+
+- `institutionId` (필수): 기관 ID
+- `institutionClassId` (선택): 반 ID (지정 시 해당 반의 학생만 조회)
 
 **요청**
 
 ```
-GET /api/portal/students?classId={classId}
+GET /api/portal/students?institutionId={institutionId}&institutionClassId={classId}
 Authorization: Bearer {token}
 ```
 
@@ -531,13 +532,13 @@ Authorization: Bearer {token}
       ],
       "institutionId": "string",
       "institutionClassId": "string",
+      "institution": {
+        "id": "string",
+        "name": "string"
+      },
       "institutionClass": {
         "id": "string",
-        "name": "string",
-        "institution": {
-          "id": "string",
-          "name": "string"
-        }
+        "name": "string"
       },
       "createdAt": "2024-01-01T00:00:00.000Z"
     }
@@ -572,14 +573,13 @@ Authorization: Bearer {token}
       "picture": "string | null"
     }
   ],
+  "institution": {
+    "id": "string",
+    "name": "string"
+  },
   "institutionClass": {
     "id": "string",
-    "name": "string",
-    "institutionId": "string",
-    "institution": {
-      "id": "string",
-      "name": "string"
-    }
+    "name": "string"
   },
   "user": {
     "id": "string",
@@ -648,9 +648,16 @@ Authorization: Bearer {token}
 
 ## 6. 포트폴리오
 
+> **중요**: 모든 포트폴리오 API는 `studentId` (Student 테이블의 ID)를 사용합니다.
+> 시스템이 자동으로 Student와 연결된 Profile을 찾아서 사용하며, Portfolio의 소유자(userId)는 Student의 User로 설정됩니다.
+
 ### GET /api/portal/students/:studentId/portfolios
 
 학생의 포트폴리오 목록 조회
+
+**경로 파라미터**:
+
+- `studentId`: Student 테이블의 ID (Student.id)
 
 **요청**
 
@@ -662,64 +669,101 @@ Authorization: Bearer {token}
 **응답** (200 OK)
 
 ```json
-{
-  "portfolios": [
-    {
-      "id": "string",
-      "profileId": "string",
-      "title": "string",
-      "thumbnail": "string | null",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "total": 5
-}
+[
+  {
+    "id": "string",
+    "userId": "string (student의 userId)",
+    "profileId": "string",
+    "title": "string",
+    "coverComponents": {},
+    "contents": [
+      {
+        "id": "string",
+        "type": "IMAGE | PDF | AUDIOBOOK",
+        "order": 0,
+        "name": "string"
+      }
+    ],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
 ```
 
 ### POST /api/portal/students/:studentId/portfolios
 
 포트폴리오 저장/생성
 
+**경로 파라미터**:
+
+- `studentId`: Student 테이블의 ID (Student.id)
+
 **요청**
 
 ```json
 POST /api/portal/students/{studentId}/portfolios
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 
 {
-  "profileId": "string",
+  "id": "string (optional, 수정 시)",
   "title": "string",
-  "thumbnail": "string (optional)",
-  "contents": [
-    {
-      "type": "IMAGE | PDF | AUDIOBOOK",
-      "imageUrl": "string (IMAGE인 경우)",
-      "pdfUrl": "string (PDF인 경우)",
-      "audioBookId": "string (AUDIOBOOK인 경우)"
-    }
-  ]
+  "content": "[JSON array of content items]",
+  "coverComponents": "[JSON object, optional]",
+  "cover": "File (optional, 커버 이미지)",
+  "file_{tempId}": "File (업로드할 파일들)"
 }
 ```
 
-**응답** (201 Created)
+**content JSON 구조**:
+
+```json
+[
+  {
+    "id": "string (optional, 기존 항목)",
+    "type": "IMAGE | PDF | AUDIOBOOK",
+    "order": 0,
+    "name": "string (optional)",
+    "fileTempId": "string (새 파일인 경우)",
+    "audioBookEditionId": "string (AUDIOBOOK인 경우)",
+    "isNew": true
+  }
+]
+```
+
+**응답** (200 OK)
 
 ```json
 {
-  "message": "Portfolio saved successfully",
-  "portfolio": {
-    "id": "string",
-    "profileId": "string",
-    "title": "string",
-    "thumbnail": "string | null"
-  }
+  "id": "string",
+  "userId": "string (student의 userId)",
+  "profileId": "string",
+  "title": "string",
+  "coverComponents": {},
+  "coverUrl": "string (presigned URL)",
+  "contents": [
+    {
+      "id": "string",
+      "type": "IMAGE | PDF | AUDIOBOOK",
+      "order": 0,
+      "name": "string",
+      "fileUrl": "string (presigned URL)",
+      "coverPageUrl": "string (AUDIOBOOK인 경우)"
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
 ### GET /api/portal/students/:studentId/portfolios/:portfolioId
 
 포트폴리오 상세 조회
+
+**경로 파라미터**:
+
+- `studentId`: Student 테이블의 ID (Student.id)
+- `portfolioId`: Portfolio ID
 
 **요청**
 
@@ -733,20 +777,20 @@ Authorization: Bearer {token}
 ```json
 {
   "id": "string",
+  "userId": "string (student의 userId)",
   "profileId": "string",
   "title": "string",
-  "thumbnail": "string | null",
+  "coverComponents": {},
+  "coverUrl": "string (presigned URL)",
   "contents": [
     {
       "id": "string",
       "type": "IMAGE | PDF | AUDIOBOOK",
-      "imageUrl": "string | null",
-      "pdfUrl": "string | null",
-      "audioBookId": "string | null",
-      "audioBook": {
-        "id": "string",
-        "title": "string"
-      }
+      "order": 0,
+      "name": "string",
+      "fileUrl": "string (presigned URL)",
+      "coverPageUrl": "string (AUDIOBOOK인 경우, optional)",
+      "audioBookEditionId": "string (AUDIOBOOK인 경우)"
     }
   ],
   "createdAt": "2024-01-01T00:00:00.000Z",
@@ -797,14 +841,19 @@ Content-Type: application/json
 }
 ```
 
-### GET /api/portal/shared-tablets?classId=xxx
+### GET /api/portal/shared-tablets?institutionId=xxx&institutionClassId=yyy
 
-특정 반의 공용 태블릿 목록 조회
+공용 태블릿 목록 조회 (기관별 또는 반별)
+
+**쿼리 파라미터**:
+
+- `institutionId` (필수): 기관 ID
+- `institutionClassId` (선택): 반 ID (지정 시 해당 반의 태블릿만 조회)
 
 **요청**
 
 ```
-GET /api/portal/shared-tablets?classId={classId}
+GET /api/portal/shared-tablets?institutionId={institutionId}&institutionClassId={classId}
 Authorization: Bearer {token}
 ```
 
@@ -826,11 +875,7 @@ Authorization: Bearer {token}
       },
       "institutionClass": {
         "id": "string",
-        "name": "string",
-        "institution": {
-          "id": "string",
-          "name": "string"
-        }
+        "name": "string"
       },
       "memo": "string | null",
       "createdAt": "2024-01-01T00:00:00.000Z"
@@ -858,23 +903,23 @@ Authorization: Bearer {token}
   "id": "string",
   "userId": "string",
   "name": "string",
-  "user": {
+  "memo": "string | null",
+  "institutionId": "string",
+  "institutionClassId": "string",
+  "institution": {
     "id": "string",
     "name": "string"
   },
   "institutionClass": {
     "id": "string",
-    "name": "string",
-    "institutionId": "string",
-    "institution": {
-      "id": "string",
-      "name": "string"
-    }
+    "name": "string"
   },
-  "institution": {
+  "user": {
     "id": "string",
     "name": "string"
-  }
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
