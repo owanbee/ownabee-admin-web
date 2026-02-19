@@ -107,17 +107,23 @@ export default function PortfolioDetailPage() {
         ]}
         action={
           <div className="flex gap-2">
-            <Link href={`/portfolios/${portfolio.id}/edit?profileId=${portfolio.profileId}`}>
+            <Link href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profileId}`}>
               <Button>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Button>
             </Link>
-            <Button variant="destructive" onClick={() => setDeleteModal({ open: true, isDeleting: false })}>
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteModal({ open: true, isDeleting: false })}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </Button>
-            <Button variant="outline" onClick={() => router.push(`/students/${studentId}/portfolios`)}>
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/students/${studentId}/portfolios`)}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
@@ -125,11 +131,7 @@ export default function PortfolioDetailPage() {
         }
       />
 
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
       {/* Cover Image */}
       <Card className="mb-6">
@@ -196,10 +198,7 @@ export default function PortfolioDetailPage() {
                 .map((item, index) => {
                   const Icon = contentTypeIcons[item.type];
                   return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 rounded-lg border p-4"
-                    >
+                    <div key={item.id} className="flex items-center gap-3 rounded-lg border p-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
                         <Icon className="h-5 w-5 text-blue-600" />
                       </div>

@@ -104,7 +104,9 @@ function PortfoliosPageContent() {
     // Fetch portfolios with the URL params immediately
     const fetchWithUrlParams = async () => {
       try {
-        const params: { institutionId?: string; institutionClassId?: string; studentId?: string } | undefined =
+        const params:
+          | { institutionId?: string; institutionClassId?: string; studentId?: string }
+          | undefined =
           finalInstitutionId || finalClassId || finalStudentId
             ? {
                 ...(finalInstitutionId && { institutionId: finalInstitutionId }),
@@ -169,7 +171,9 @@ function PortfoliosPageContent() {
 
   const fetchPortfolios = async () => {
     try {
-      const params: { institutionId?: string; institutionClassId?: string; studentId?: string } | undefined =
+      const params:
+        | { institutionId?: string; institutionClassId?: string; studentId?: string }
+        | undefined =
         filterInstitutionId || filterClassId || filterStudentId
           ? {
               ...(filterInstitutionId && { institutionId: filterInstitutionId }),
@@ -417,7 +421,7 @@ function PortfoliosPageContent() {
                 {/* Actions */}
                 <div className="mt-4 flex gap-2">
                   <Link
-                    href={`/portfolios/${portfolio.id}/edit?profileId=${portfolio.profileId}`}
+                    href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profileId}`}
                     className="flex-1"
                   >
                     <Button variant="outline" size="sm" className="w-full">
