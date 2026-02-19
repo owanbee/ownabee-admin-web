@@ -21,7 +21,7 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { SharedTablet, UpdateSharedTabletPayload } from "@/types";
 
 export default function SharedTabletDetailPage() {
@@ -58,7 +58,7 @@ export default function SharedTabletDetailPage() {
       });
     } catch (err) {
       console.error("Failed to fetch tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to load tablet");
+      setError(isApiError(err) ? err.message : "Failed to load tablet");
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +99,7 @@ export default function SharedTabletDetailPage() {
       fetchTablet();
     } catch (err) {
       console.error("Failed to update tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to update tablet");
+      setError(isApiError(err) ? err.message : "Failed to update tablet");
     } finally {
       setIsSubmitting(false);
     }
@@ -123,7 +123,7 @@ export default function SharedTabletDetailPage() {
       router.push("/admin/shared-tablets");
     } catch (err) {
       console.error("Failed to delete tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete tablet");
+      setError(isApiError(err) ? err.message : "Failed to delete tablet");
     } finally {
       setIsDeleting(false);
     }

@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { PortfolioForm } from "@/components/forms/PortfolioForm";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
+import { isApiError } from "@/lib/utils";
 import type { Portfolio, Student } from "@/types";
 
 export default function EditPortfolioPage() {
@@ -40,7 +41,7 @@ export default function EditPortfolioPage() {
         setPortfolio(portfolioData);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(isApiError(err) ? err.message : "Failed to load data");
       } finally {
         setIsLoading(false);
       }

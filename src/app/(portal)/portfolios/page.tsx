@@ -27,7 +27,7 @@ import { LoadingPage } from "@/components/ui/loading";
 import { ConfirmModal } from "@/components/ui/modal";
 import { StudentSelectModal } from "@/components/modals/StudentSelectModal";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type {
   Portfolio,
   PortfolioContentType,
@@ -116,7 +116,7 @@ function PortfoliosPageContent() {
         setPortfolios(data);
       } catch (err) {
         console.error("Failed to fetch portfolios:", err);
-        setError(err instanceof Error ? err.message : "Failed to load portfolios");
+        setError(isApiError(err) ? err.message : "Failed to load portfolios");
       }
     };
 
@@ -162,7 +162,7 @@ function PortfoliosPageContent() {
       setIsLoading(false);
     } catch (err) {
       console.error("Failed to fetch initial data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
       setIsLoading(false);
     }
   };
@@ -181,7 +181,7 @@ function PortfoliosPageContent() {
       setPortfolios(data);
     } catch (err) {
       console.error("Failed to fetch portfolios:", err);
-      setError(err instanceof Error ? err.message : "Failed to load portfolios");
+      setError(isApiError(err) ? err.message : "Failed to load portfolios");
     }
   };
 
@@ -231,7 +231,7 @@ function PortfoliosPageContent() {
       setDeleteModal({ open: false, portfolio: null, isDeleting: false });
     } catch (err) {
       console.error("Failed to delete portfolio:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete portfolio");
+      setError(isApiError(err) ? err.message : "Failed to delete portfolio");
       setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
   };

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { api } from "@/lib/api";
+import { isApiError } from "@/lib/utils";
 import type { Portfolio, PortfolioContentType, PortfolioContentItem } from "@/types";
 
 interface ContentItem {
@@ -151,7 +152,7 @@ export function PortfolioForm({
       onSuccess();
     } catch (err) {
       console.error("Failed to save portfolio:", err);
-      setError(err instanceof Error ? err.message : "Failed to save portfolio");
+      setError(isApiError(err) ? err.message : "Failed to save portfolio");
     } finally {
       setIsSubmitting(false);
     }

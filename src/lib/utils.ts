@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ApiError } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -74,4 +75,11 @@ export function getStatusColor(status: string): string {
     default:
       return "bg-gray-100 text-gray-800";
   }
+}
+
+// 'err'가 ApiError 타입인지 확인하는 판별기
+export function isApiError(err: any): err is ApiError {
+  return (
+    err !== null && typeof err === "object" && "message" in err // 최소한 message 속성이 있는지 확인
+  );
 }

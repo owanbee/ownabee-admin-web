@@ -16,7 +16,7 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import { useIsInstitutionAdmin, useAuthStore } from "@/stores/authStore";
 import type { InstitutionClass, Institution } from "@/types";
 
@@ -104,7 +104,7 @@ function ClassesPageContent() {
       setInstitutions(institutionsData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +143,7 @@ function ClassesPageContent() {
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save class:", err);
-      setError(err instanceof Error ? err.message : "Failed to save class");
+      setError(isApiError(err) ? err.message : "Failed to save class");
     } finally {
       setIsSubmitting(false);
     }

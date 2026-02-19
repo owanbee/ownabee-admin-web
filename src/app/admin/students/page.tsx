@@ -15,7 +15,7 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Student, CreateStudentPayload, InstitutionClass, Institution } from "@/types";
 
 function AdminStudentsPageContent() {
@@ -61,7 +61,7 @@ function AdminStudentsPageContent() {
       setStudents(studentsData.students);
     } catch (err) {
       console.error("Failed to fetch students:", err);
-      setError(err instanceof Error ? err.message : "Failed to load students");
+      setError(isApiError(err) ? err.message : "Failed to load students");
     }
   }, [filterInstitutionId, filterClassId]);
 
@@ -108,7 +108,7 @@ function AdminStudentsPageContent() {
         setStudents(studentsData.students);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(isApiError(err) ? err.message : "Failed to load data");
       } finally {
         setIsLoading(false);
       }
@@ -209,7 +209,7 @@ function AdminStudentsPageContent() {
       fetchStudents();
     } catch (err) {
       console.error("Failed to save student:", err);
-      setError(err instanceof Error ? err.message : "Failed to save student");
+      setError(isApiError(err) ? err.message : "Failed to save student");
     } finally {
       setIsSubmitting(false);
     }

@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingPage } from "@/components/ui/loading";
 import { ConfirmModal } from "@/components/ui/modal";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Portfolio, PortfolioContentType } from "@/types";
 
 const contentTypeIcons: Record<PortfolioContentType, React.ElementType> = {
@@ -58,7 +58,7 @@ export default function PortfolioDetailPage() {
         setPortfolio(data);
       } catch (err) {
         console.error("Failed to fetch portfolio:", err);
-        setError(err instanceof Error ? err.message : "Failed to load portfolio");
+        setError(isApiError(err) ? err.message : "Failed to load portfolio");
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +75,7 @@ export default function PortfolioDetailPage() {
       router.push("/portfolios");
     } catch (err) {
       console.error("Failed to delete portfolio:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete portfolio");
+      setError(isApiError(err) ? err.message : "Failed to delete portfolio");
       setDeleteModal({ open: false, isDeleting: false });
     }
   };

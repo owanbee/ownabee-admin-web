@@ -23,7 +23,7 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Student, UpdateStudentPayload } from "@/types";
 
 export default function StudentDetailPage() {
@@ -64,7 +64,7 @@ export default function StudentDetailPage() {
       });
     } catch (err) {
       console.error("Failed to fetch student:", err);
-      setError(err instanceof Error ? err.message : "Failed to load student");
+      setError(isApiError(err) ? err.message : "Failed to load student");
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +109,7 @@ export default function StudentDetailPage() {
       fetchStudent();
     } catch (err) {
       console.error("Failed to update student:", err);
-      setError(err instanceof Error ? err.message : "Failed to update student");
+      setError(isApiError(err) ? err.message : "Failed to update student");
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +133,7 @@ export default function StudentDetailPage() {
       router.push("/admin/students");
     } catch (err) {
       console.error("Failed to delete student:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete student");
+      setError(isApiError(err) ? err.message : "Failed to delete student");
     } finally {
       setIsDeleting(false);
     }

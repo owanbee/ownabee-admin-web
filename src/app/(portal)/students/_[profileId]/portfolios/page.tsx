@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { ConfirmModal } from "@/components/ui/modal";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Portfolio, PortfolioContentType } from "@/types";
 
 const contentTypeIcons: Record<PortfolioContentType, React.ElementType> = {
@@ -52,7 +52,7 @@ export default function StudentPortfoliosPage() {
       // setPortfolios(data.portfolios);
     } catch (err) {
       console.error("Failed to fetch portfolios:", err);
-      setError(err instanceof Error ? err.message : "Failed to load portfolios");
+      setError(isApiError(err) ? err.message : "Failed to load portfolios");
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +73,7 @@ export default function StudentPortfoliosPage() {
       setDeleteModal({ open: false, portfolio: null, isDeleting: false });
     } catch (err) {
       console.error("Failed to delete portfolio:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete portfolio");
+      setError(isApiError(err) ? err.message : "Failed to delete portfolio");
       setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
   };

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Institution } from "@/types";
 
 export default function InstitutionsPage() {
@@ -33,7 +33,7 @@ export default function InstitutionsPage() {
       setInstitutions(data);
     } catch (err) {
       console.error("Failed to fetch institutions:", err);
-      setError(err instanceof Error ? err.message : "Failed to load institutions");
+      setError(isApiError(err) ? err.message : "Failed to load institutions");
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +79,7 @@ export default function InstitutionsPage() {
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save institution:", err);
-      setError(err instanceof Error ? err.message : "Failed to save institution");
+      setError(isApiError(err) ? err.message : "Failed to save institution");
     } finally {
       setIsSubmitting(false);
     }

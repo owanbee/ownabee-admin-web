@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
+import { isApiError } from "@/lib/utils";
 import { useIsInstitutionAdmin } from "@/stores/authStore";
 import type {
   InstitutionClass,
@@ -80,7 +81,7 @@ export default function ClassDetailPage() {
       setTeachers(teachersData ?? []);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +100,7 @@ export default function ClassDetailPage() {
       setSearchResults(results);
     } catch (err) {
       console.error("Failed to search user:", err);
-      setError(err instanceof Error ? err.message : "Failed to search user");
+      setError(isApiError(err) ? err.message : "Failed to search user");
     } finally {
       setIsSearching(false);
     }
@@ -117,7 +118,7 @@ export default function ClassDetailPage() {
       await fetchData();
     } catch (err) {
       console.error("Failed to assign teacher:", err);
-      setError(err instanceof Error ? err.message : "Failed to assign teacher");
+      setError(isApiError(err) ? err.message : "Failed to assign teacher");
     } finally {
       setIsAssigning(false);
     }
@@ -135,7 +136,7 @@ export default function ClassDetailPage() {
       await fetchData();
     } catch (err) {
       console.error("Failed to remove teacher:", err);
-      setError(err instanceof Error ? err.message : "Failed to remove teacher");
+      setError(isApiError(err) ? err.message : "Failed to remove teacher");
     } finally {
       setIsRemoving(false);
     }

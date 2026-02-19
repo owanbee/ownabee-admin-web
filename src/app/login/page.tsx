@@ -6,6 +6,7 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { FolderOpen, KeyRound, Mail } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { api } from "@/lib/api";
+import { isApiError } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +69,7 @@ export default function LoginPage() {
       await handleLoginSuccess(authResponse);
     } catch (err) {
       console.error("Backend auth error:", err);
-      setError(err instanceof Error ? err.message : "Failed to authenticate");
+      setError(isApiError(err) ? err.message : "Failed to authenticate");
     }
   };
 

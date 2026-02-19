@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { ApiError } from "@/types";
+import { isApiError } from "@/lib/utils";
 
 interface UseApiState<T> {
   data: T | null;
@@ -34,7 +35,7 @@ export function useApi<T>(
     } catch (err) {
       const errStatus = (err as { status?: number }).status;
       const error: ApiError = {
-        message: err instanceof Error ? err.message : "An error occurred",
+        message: isApiError(err) ? err.message : "An error occurred",
         ...(errStatus !== undefined ? { status: errStatus } : {}),
       };
       setState({ data: null, isLoading: false, error });
@@ -85,7 +86,7 @@ export function useMutation<TData, TVariables>(
       } catch (err) {
         const errStatus = (err as { status?: number }).status;
         const error: ApiError = {
-          message: err instanceof Error ? err.message : "An error occurred",
+          message: isApiError(err) ? err.message : "An error occurred",
           ...(errStatus !== undefined ? { status: errStatus } : {}),
         };
         setState({ data: null, isLoading: false, error });
