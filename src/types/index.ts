@@ -129,6 +129,11 @@ export interface Student {
     id: string;
     name: string;
   };
+  profiles?: {
+    id: string;
+    name: string;
+    picture: string | null;
+  }[];
 }
 
 export interface CreateStudentPayload {
@@ -226,12 +231,35 @@ export interface Portfolio {
   title: string;
   coverImage?: string | null; // Legacy API
   coverUrl?: string; // Portal API
+  coverComponents?: any;
   profileId: string;
   userId?: string; // Portal API
   createdAt: string;
   updatedAt: string;
   contentItems?: PortfolioContentItem[]; // Legacy API
   contents?: PortfolioContentItem[]; // Portal API
+  profile?: {
+    id: string;
+    name: string;
+    picture: string | null;
+    user?: {
+      id: string;
+      email: string;
+      name: string;
+    };
+    institution?: {
+      id: string;
+      name: string;
+    };
+    institutionClass?: {
+      id: string;
+      name: string;
+    };
+    student?: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
 export interface PortfolioContentItem {

@@ -84,8 +84,8 @@ function StudentsPageContent() {
     try {
       if (selectedClassId || filterInstitutionId) {
         const data = await api.getPortalStudents({
-          classId: selectedClassId || "",
           institutionId: filterInstitutionId || "",
+          institutionClassId: selectedClassId || "",
         });
         setStudents(data.students);
       } else {
@@ -193,8 +193,8 @@ function StudentsPageContent() {
           api.getMyInstitutions(),
           classIdParam || institutionIdParam
             ? api.getPortalStudents({
-                classId: classIdParam || "",
                 institutionId: institutionIdParam || "",
+                institutionClassId: classIdParam || "",
               })
             : api.getMyStudents(),
         ]);

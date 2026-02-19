@@ -220,53 +220,55 @@ class ApiClient {
     });
   }
 
-  async getPortalClass(classId: string): Promise<InstitutionClass> {
-    return this.request<InstitutionClass>(`/portal/classes/${classId}`);
+  async getPortalClass(institutionClassId: string): Promise<InstitutionClass> {
+    return this.request<InstitutionClass>(`/portal/classes/${institutionClassId}`);
   }
 
-  async updatePortalClass(classId: string, payload: UpdateClassPayload): Promise<InstitutionClass> {
-    return this.request<InstitutionClass>(`/portal/classes/${classId}`, {
+  async updatePortalClass(
+    institutionClassId: string,
+    payload: UpdateClassPayload
+  ): Promise<InstitutionClass> {
+    return this.request<InstitutionClass>(`/portal/classes/${institutionClassId}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     });
   }
 
-  async deletePortalClass(classId: string): Promise<void> {
-    return this.request<void>(`/portal/classes/${classId}`, {
+  async deletePortalClass(institutionClassId: string): Promise<void> {
+    return this.request<void>(`/portal/classes/${institutionClassId}`, {
       method: "DELETE",
     });
   }
 
-  async getPortalClassTeachers(classId: string): Promise<ClassTeacher[]> {
-    return this.request<ClassTeacher[]>(`/portal/classes/${classId}/teachers`);
+  async getPortalClassTeachers(institutionClassId: string): Promise<ClassTeacher[]> {
+    return this.request<ClassTeacher[]>(`/portal/classes/${institutionClassId}/teachers`);
   }
 
   async assignPortalTeacher(
-    classId: string,
+    institutionClassId: string,
     payload: AssignPortalTeacherPayload
   ): Promise<ClassTeacher> {
-    return this.request<ClassTeacher>(`/portal/classes/${classId}/teachers`, {
+    return this.request<ClassTeacher>(`/portal/classes/${institutionClassId}/teachers`, {
       method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
-  async removePortalTeacher(classId: string, userId: string): Promise<void> {
-    return this.request<void>(`/portal/classes/${classId}/teachers/${userId}`, {
+  async removePortalTeacher(institutionClassId: string, userId: string): Promise<void> {
+    return this.request<void>(`/portal/classes/${institutionClassId}/teachers/${userId}`, {
       method: "DELETE",
     });
   }
 
   // Portal: Students
   async getPortalStudents(params?: {
-    classId?: string;
     institutionId?: string;
     institutionClassId?: string;
   }): Promise<{ students: Student[]; total: number }> {
     const queryParams = new URLSearchParams();
-    if (params?.classId) queryParams.append("classId", params.classId);
     if (params?.institutionId) queryParams.append("institutionId", params.institutionId);
-    if (params?.institutionClassId) queryParams.append("institutionClassId", params.institutionClassId);
+    if (params?.institutionClassId)
+      queryParams.append("institutionClassId", params.institutionClassId);
     const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
     return this.request<{ students: Student[]; total: number }>(`/portal/students${query}`);
   }
@@ -297,14 +299,13 @@ class ApiClient {
 
   // Portal: Shared Tablets
   async getPortalSharedTablets(params?: {
-    classId?: string;
     institutionId?: string;
     institutionClassId?: string;
   }): Promise<{ tablets: SharedTablet[]; total: number }> {
     const queryParams = new URLSearchParams();
-    if (params?.classId) queryParams.append("classId", params.classId);
     if (params?.institutionId) queryParams.append("institutionId", params.institutionId);
-    if (params?.institutionClassId) queryParams.append("institutionClassId", params.institutionClassId);
+    if (params?.institutionClassId)
+      queryParams.append("institutionClassId", params.institutionClassId);
     const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
     return this.request<{ tablets: SharedTablet[]; total: number }>(
       `/portal/shared-tablets${query}`
@@ -339,6 +340,24 @@ class ApiClient {
   }
 
   // Portal: Portfolios
+  async getAllPortfolios(params?: {
+    institutionId?: string;
+    institutionClassId?: string;
+    studentId?: string;
+  }): Promise<Portfolio[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.institutionId) queryParams.append("institutionId", params.institutionId);
+    if (params?.institutionClassId)
+      queryParams.append("institutionClassId", params.institutionClassId);
+    if (params?.studentId) queryParams.append("studentId", params.studentId);
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
+    return this.request<Portfolio[]>(`/portal/portfolios${query}`);
+  }
+
+  async getPortfolioById(portfolioId: string): Promise<Portfolio> {
+    return this.request<Portfolio>(`/portal/portfolios/${portfolioId}`);
+  }
+
   async getStudentPortfolios(studentId: string): Promise<Portfolio[]> {
     return this.request<Portfolio[]>(`/portal/students/${studentId}/portfolios`);
   }
@@ -509,9 +528,9 @@ class ApiClient {
   // Admin: Student Code APIs
   // ========================================
 
-  async getStudentCodes(classId?: string, status?: string): Promise<StudentCode[]> {
+  async getStudentCodes(institutionClassId?: string, status?: string): Promise<StudentCode[]> {
     const params = new URLSearchParams();
-    if (classId) params.append("classId", classId);
+    if (institutionClassId) params.append("institutionClassId", institutionClassId);
     if (status) params.append("status", status);
     const query = params.toString() ? `?${params.toString()}` : "";
     return this.request<StudentCode[]>(`/admin/institutions/student-codes${query}`);
@@ -571,19 +590,22 @@ class ApiClient {
   // Admin: Teacher Assignment APIs
   // ========================================
 
-  async getClassTeachers(classId: string): Promise<ClassTeacher[]> {
-    return this.request<ClassTeacher[]>(`/admin/classes/${classId}/teachers`);
+  async getClassTeachers(institutionClassId: string): Promise<ClassTeacher[]> {
+    return this.request<ClassTeacher[]>(`/admin/classes/${institutionClassId}/teachers`);
   }
 
-  async assignTeacher(classId: string, payload: AssignTeacherPayload): Promise<ClassTeacher> {
-    return this.request<ClassTeacher>(`/admin/classes/${classId}/teachers`, {
+  async assignTeacher(
+    institutionClassId: string,
+    payload: AssignTeacherPayload
+  ): Promise<ClassTeacher> {
+    return this.request<ClassTeacher>(`/admin/classes/${institutionClassId}/teachers`, {
       method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
-  async unassignTeacher(classId: string, userId: string): Promise<void> {
-    return this.request<void>(`/admin/classes/${classId}/teachers/${userId}`, {
+  async unassignTeacher(institutionClassId: string, userId: string): Promise<void> {
+    return this.request<void>(`/admin/classes/${institutionClassId}/teachers/${userId}`, {
       method: "DELETE",
     });
   }

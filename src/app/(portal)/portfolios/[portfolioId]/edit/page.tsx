@@ -15,7 +15,7 @@ export default function EditPortfolioPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const portfolioId = params.id as string;
+  const portfolioId = params.portfolioId as string;
   const studentId = searchParams.get("studentId");
 
   const [student, setStudent] = React.useState<Student | null>(null);

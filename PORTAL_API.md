@@ -214,6 +214,63 @@ Authorization: Bearer {token}
 }
 ```
 
+### GET /api/portal/my-portfolios
+
+접근 가능한 모든 포트폴리오 조회
+
+**요청**
+
+```
+GET /api/portal/my-portfolios
+Authorization: Bearer {token}
+```
+
+**응답** (200 OK)
+
+```json
+{
+  "portfolios": [
+    {
+      "id": "string",
+      "userId": "string",
+      "profileId": "string",
+      "title": "string",
+      "coverComponents": {},
+      "coverUrl": "string (presigned URL)",
+      "profile": {
+        "id": "string",
+        "name": "string",
+        "picture": "string | null",
+        "user": {
+          "id": "string",
+          "email": "string",
+          "name": "string"
+        },
+        "institution": {
+          "id": "string",
+          "name": "string"
+        },
+        "institutionClass": {
+          "id": "string",
+          "name": "string"
+        }
+      },
+      "contents": [
+        {
+          "id": "string",
+          "type": "IMAGE | PDF | AUDIOBOOK",
+          "order": 0,
+          "name": "string"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "total": 10
+}
+```
+
 ---
 
 ## 3. 반(Class) 관리
@@ -648,8 +705,156 @@ Authorization: Bearer {token}
 
 ## 6. 포트폴리오
 
-> **중요**: 모든 포트폴리오 API는 `studentId` (Student 테이블의 ID)를 사용합니다.
-> 시스템이 자동으로 Student와 연결된 Profile을 찾아서 사용하며, Portfolio의 소유자(userId)는 Student의 User로 설정됩니다.
+> **중요**: 포트폴리오 API는 두 가지 방식으로 제공됩니다:
+>
+> 1. **기관/클래스 기반 조회**: `/api/portal/portfolios` - 쿼리스트링으로 필터링
+> 2. **학생 기반 조회/수정**: `/api/portal/students/:studentId/portfolios` - studentId 사용
+
+### GET /api/portal/portfolios
+
+기관/클래스/학생별 포트폴리오 목록 조회 (필터링 가능)
+
+**쿼리 파라미터** (모두 선택적):
+
+- `institutionId`: 특정 기관의 포트폴리오만 조회
+- `institutionClassId`: 특정 클래스의 포트폴리오만 조회
+- `studentId`: 특정 학생(Student ID)의 포트폴리오만 조회
+- 파라미터 없음: 접근 가능한 모든 포트폴리오 조회
+
+**요청**
+
+```
+GET /api/portal/portfolios?institutionId={institutionId}&institutionClassId={institutionClassId}&studentId={studentId}
+Authorization: Bearer {token}
+```
+
+**응답** (200 OK)
+
+```json
+[
+  {
+    "id": "string",
+    "userId": "string",
+    "profileId": "string",
+    "title": "string",
+    "coverComponents": {},
+    "coverUrl": "string (presigned URL)",
+    "profile": {
+      "id": "string",
+      "name": "string",
+      "picture": "string | null",
+      "user": {
+        "id": "string",
+        "email": "string",
+        "name": "string"
+      },
+      "institution": {
+        "id": "string",
+        "name": "string"
+      },
+      "institutionClass": {
+        "id": "string",
+        "name": "string"
+      }
+    },
+    "contents": [
+      {
+        "id": "string",
+        "type": "IMAGE | PDF | AUDIOBOOK",
+        "order": 0,
+        "name": "string"
+      }
+    ],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+**사용 예시**:
+
+```
+# 모든 접근 가능한 포트폴리오
+GET /api/portal/portfolios
+
+# 특정 기관의 포트폴리오
+GET /api/portal/portfolios?institutionId=inst-123
+
+# 특정 클래스의 포트폴리오
+GET /api/portal/portfolios?institutionClassId=class-456
+
+# 특정 학생의 포트폴리오
+GET /api/portal/portfolios?studentId=student-789
+
+# 특정 기관의 특정 클래스
+GET /api/portal/portfolios?institutionId=inst-123&institutionClassId=class-456
+```
+
+### GET /api/portal/portfolios/:portfolioId
+
+포트폴리오 상세 조회 (ID 기반)
+
+**경로 파라미터**:
+
+- `portfolioId`: Portfolio ID
+
+**요청**
+
+```
+GET /api/portal/portfolios/{portfolioId}
+Authorization: Bearer {token}
+```
+
+**응답** (200 OK)
+
+```json
+{
+  "id": "string",
+  "userId": "string",
+  "profileId": "string",
+  "title": "string",
+  "coverComponents": {},
+  "coverUrl": "string (presigned URL)",
+  "profile": {
+    "id": "string",
+    "name": "string",
+    "picture": "string | null",
+    "user": {
+      "id": "string",
+      "email": "string",
+      "name": "string"
+    },
+    "institution": {
+      "id": "string",
+      "name": "string"
+    },
+    "institutionClass": {
+      "id": "string",
+      "name": "string"
+    }
+  },
+  "contents": [
+    {
+      "id": "string",
+      "type": "IMAGE | PDF | AUDIOBOOK",
+      "order": 0,
+      "name": "string",
+      "fileUrl": "string (presigned URL)",
+      "coverPageUrl": "string (AUDIOBOOK인 경우, optional)",
+      "audioBookEditionId": "string (AUDIOBOOK인 경우)"
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**에러**:
+
+- `403 Forbidden`: B2C 포트폴리오 접근 시 또는 권한 없음
+- `404 Not Found`: 포트폴리오를 찾을 수 없음
+
+---
 
 ### GET /api/portal/students/:studentId/portfolios
 

@@ -65,8 +65,14 @@ export default function ClassDetailPage() {
 
       // Fetch related data for this class
       const [tabletsData, studentsData, teachersData] = await Promise.all([
-        api.getPortalSharedTablets({ institutionId: classInfo.institutionId, classId }),
-        api.getPortalStudents({ institutionId: classInfo.institutionId, classId }),
+        api.getPortalSharedTablets({
+          institutionId: classInfo.institutionId,
+          institutionClassId: classId,
+        }),
+        api.getPortalStudents({
+          institutionId: classInfo.institutionId,
+          institutionClassId: classId,
+        }),
         api.getPortalClassTeachers(classId),
       ]);
       setSharedTablets(tabletsData?.tablets ?? []);
@@ -226,9 +232,7 @@ export default function ClassDetailPage() {
               <UserCircle className="h-5 w-5" />
               Students
             </CardTitle>
-            <Link
-              href={`/students?institutionId=${classData.institutionId}&classId=${classId}`}
-            >
+            <Link href={`/students?institutionId=${classData.institutionId}&classId=${classId}`}>
               <Button size="sm" variant="outline">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Manage Students

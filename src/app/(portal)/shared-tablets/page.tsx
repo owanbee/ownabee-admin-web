@@ -152,8 +152,8 @@ function SharedTabletsPageContent() {
       if (selectedClassId || filterInstitutionId) {
         // Fetch tablets for specific class or institution
         const result = await api.getPortalSharedTablets({
-          classId: selectedClassId ?? "",
           institutionId: filterInstitutionId ?? "",
+          institutionClassId: selectedClassId ?? "",
         });
         setTablets(result.tablets);
       } else {
@@ -182,8 +182,8 @@ function SharedTabletsPageContent() {
           api.getMyInstitutions(),
           classIdParam || institutionIdParam
             ? api.getPortalSharedTablets({
-                classId: classIdParam ?? "",
                 institutionId: institutionIdParam ?? "",
+                institutionClassId: classIdParam ?? "",
               })
             : api.getMySharedTablets(),
         ]);
