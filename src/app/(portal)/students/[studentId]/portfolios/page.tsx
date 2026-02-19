@@ -154,25 +154,29 @@ export default function StudentPortfoliosPage() {
           {portfolios.map((portfolio) => (
             <Card key={portfolio.id} className="overflow-hidden">
               {/* Cover Image */}
-              <div className="aspect-video bg-gray-100">
-                {portfolio.coverImage || portfolio.coverUrl ? (
-                  <img
-                    src={portfolio.coverImage || portfolio.coverUrl}
-                    alt={portfolio.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <FolderOpen className="h-12 w-12 text-gray-300" />
-                  </div>
-                )}
-              </div>
+              <Link href={`/portfolios/${portfolio.id}`}>
+                <div className="aspect-video bg-gray-100">
+                  {portfolio.coverImage || portfolio.coverUrl ? (
+                    <img
+                      src={portfolio.coverImage || portfolio.coverUrl}
+                      alt={portfolio.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <FolderOpen className="h-12 w-12 text-gray-300" />
+                    </div>
+                  )}
+                </div>
+              </Link>
 
               <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-900 line-clamp-1">{portfolio.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Updated {formatDate(portfolio.updatedAt)}
-                </p>
+                <Link href={`/portfolios/${portfolio.id}`}>
+                  <h3 className="font-semibold text-gray-900 line-clamp-1">{portfolio.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Updated {formatDate(portfolio.updatedAt)}
+                  </p>
+                </Link>
 
                 {/* Content Type Badges */}
                 {((portfolio.contentItems && portfolio.contentItems.length > 0) ||

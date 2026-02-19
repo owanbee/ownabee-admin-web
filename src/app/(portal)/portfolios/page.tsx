@@ -421,7 +421,7 @@ function PortfoliosPageContent() {
                 {/* Actions */}
                 <div className="mt-4 flex gap-2">
                   <Link
-                    href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profileId}`}
+                    href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profile?.student?.id || ""}`}
                     className="flex-1"
                   >
                     <Button variant="outline" size="sm" className="w-full">

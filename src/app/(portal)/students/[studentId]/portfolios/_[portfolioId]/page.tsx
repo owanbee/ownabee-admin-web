@@ -107,7 +107,9 @@ export default function PortfolioDetailPage() {
         ]}
         action={
           <div className="flex gap-2">
-            <Link href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profileId}`}>
+            <Link
+              href={`/portfolios/${portfolio.id}/edit?studentId=${portfolio.profile?.student?.id || ""}`}
+            >
               <Button>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
