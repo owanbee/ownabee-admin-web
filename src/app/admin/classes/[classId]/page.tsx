@@ -31,7 +31,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { InstitutionClass, SharedTablet, Student, ClassTeacher } from "@/types";
 
 export default function ClassDetailPage() {
@@ -67,7 +67,7 @@ export default function ClassDetailPage() {
       setTeachers(teachersData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }

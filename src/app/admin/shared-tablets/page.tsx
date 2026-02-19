@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { SharedTablet, Institution, InstitutionClass } from "@/types";
 
 function AdminSharedTabletsPageContent() {
@@ -60,7 +60,7 @@ function AdminSharedTabletsPageContent() {
       setTablets(tabletsData.tablets);
     } catch (err) {
       console.error("Failed to fetch tablets:", err);
-      setError(err instanceof Error ? err.message : "Failed to load tablets");
+      setError(isApiError(err) ? err.message : "Failed to load tablets");
     }
   }, [filterInstitutionId, filterClassId]);
 
@@ -105,7 +105,7 @@ function AdminSharedTabletsPageContent() {
         setTablets(tabletsData.tablets);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(isApiError(err) ? err.message : "Failed to load data");
       } finally {
         setIsLoading(false);
       }
@@ -196,7 +196,7 @@ function AdminSharedTabletsPageContent() {
       fetchTablets();
     } catch (err) {
       console.error("Failed to save tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to save tablet");
+      setError(isApiError(err) ? err.message : "Failed to save tablet");
     } finally {
       setIsSubmitting(false);
     }

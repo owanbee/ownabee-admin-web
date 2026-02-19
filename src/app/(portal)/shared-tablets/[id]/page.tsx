@@ -19,7 +19,7 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import type { SharedTablet } from "@/types";
 
@@ -56,7 +56,7 @@ export default function SharedTabletDetailPage() {
       setTablet(data);
     } catch (err) {
       console.error("Failed to fetch tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to load tablet");
+      setError(isApiError(err) ? err.message : "Failed to load tablet");
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +92,7 @@ export default function SharedTabletDetailPage() {
       await fetchTablet();
     } catch (err) {
       console.error("Failed to update tablet:", err);
-      setError(err instanceof Error ? err.message : "Failed to update tablet");
+      setError(isApiError(err) ? err.message : "Failed to update tablet");
     } finally {
       setIsUpdating(false);
     }

@@ -35,6 +35,7 @@ const mainNavItems: NavItem[] = [
   { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/students", label: "Students", icon: UserCircle },
   { href: "/shared-tablets", label: "Shared Tablets", icon: Tablet },
+  { href: "/portfolios", label: "Portfolios", icon: FolderOpen },
   { href: "/members", label: "Members", icon: Users, institutionAdminOnly: true },
 ];
 

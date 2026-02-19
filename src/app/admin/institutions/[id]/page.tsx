@@ -14,7 +14,7 @@ import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { formatDate, getRoleDisplayName } from "@/lib/utils";
+import { formatDate, getRoleDisplayName, isApiError } from "@/lib/utils";
 import type {
   Institution,
   InstitutionClass,
@@ -57,7 +57,7 @@ export default function InstitutionDetailPage() {
       setSharedTablets(tabletsData.tablets);
     } catch (err) {
       console.error("Failed to fetch institution data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +76,7 @@ export default function InstitutionDetailPage() {
       router.push("/admin/institutions");
     } catch (err) {
       console.error("Failed to delete institution:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete institution");
+      setError(isApiError(err) ? err.message : "Failed to delete institution");
       setIsDeletingInstitution(false);
       setIsDeleteInstitutionModalOpen(false);
     }

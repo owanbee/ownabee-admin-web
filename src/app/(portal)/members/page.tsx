@@ -23,7 +23,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
-import { getRoleDisplayName, formatDate } from "@/lib/utils";
+import { getRoleDisplayName, formatDate, isApiError } from "@/lib/utils";
 import type {
   Institution,
   InstitutionClass,
@@ -125,7 +125,7 @@ function MembersPageContent() {
         }
       } catch (err) {
         console.error("Failed to fetch initial data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(isApiError(err) ? err.message : "Failed to load data");
       } finally {
         setIsLoading(false);
       }
@@ -200,7 +200,7 @@ function MembersPageContent() {
     } catch (err) {
       console.error("Failed to add member:", err);
       setError(
-        err instanceof Error
+        isApiError(err)
           ? err.message
           : "Failed to add member. Only institution admin can add members."
       );
@@ -222,7 +222,7 @@ function MembersPageContent() {
     } catch (err) {
       console.error("Failed to assign teacher:", err);
       setError(
-        err instanceof Error
+        isApiError(err)
           ? err.message
           : "Failed to assign teacher. User must be a member of the institution first."
       );
@@ -249,7 +249,7 @@ function MembersPageContent() {
       setRemoveModal({ open: false, type: "member", item: null, isRemoving: false });
     } catch (err) {
       console.error("Failed to remove:", err);
-      setError(err instanceof Error ? err.message : "Failed to remove");
+      setError(isApiError(err) ? err.message : "Failed to remove");
       setRemoveModal((prev) => ({ ...prev, isRemoving: false }));
     }
   };

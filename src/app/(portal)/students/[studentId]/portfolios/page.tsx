@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingPage } from "@/components/ui/loading";
 import { ConfirmModal } from "@/components/ui/modal";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isApiError } from "@/lib/utils";
 import type { Portfolio, PortfolioContentType, Student } from "@/types";
 
 const contentTypeIcons: Record<PortfolioContentType, React.ElementType> = {
@@ -57,7 +57,7 @@ export default function StudentPortfoliosPage() {
       setPortfolios(portfoliosData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(isApiError(err) ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +73,7 @@ export default function StudentPortfoliosPage() {
       setPortfolios(data);
     } catch (err) {
       console.error("Failed to fetch portfolios:", err);
-      setError(err instanceof Error ? err.message : "Failed to load portfolios");
+      setError(isApiError(err) ? err.message : "Failed to load portfolios");
     }
   }, [studentId]);
 
@@ -88,7 +88,7 @@ export default function StudentPortfoliosPage() {
       setDeleteModal({ open: false, portfolio: null, isDeleting: false });
     } catch (err) {
       console.error("Failed to delete portfolio:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete portfolio");
+      setError(isApiError(err) ? err.message : "Failed to delete portfolio");
       setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
   };
@@ -154,25 +154,29 @@ export default function StudentPortfoliosPage() {
           {portfolios.map((portfolio) => (
             <Card key={portfolio.id} className="overflow-hidden">
               {/* Cover Image */}
-              <div className="aspect-video bg-gray-100">
-                {portfolio.coverImage || portfolio.coverUrl ? (
-                  <img
-                    src={portfolio.coverImage || portfolio.coverUrl}
-                    alt={portfolio.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <FolderOpen className="h-12 w-12 text-gray-300" />
-                  </div>
-                )}
-              </div>
+              <Link href={`/portfolios/${portfolio.id}`}>
+                <div className="aspect-video bg-gray-100">
+                  {portfolio.coverImage || portfolio.coverUrl ? (
+                    <img
+                      src={portfolio.coverImage || portfolio.coverUrl}
+                      alt={portfolio.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <FolderOpen className="h-12 w-12 text-gray-300" />
+                    </div>
+                  )}
+                </div>
+              </Link>
 
               <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-900 line-clamp-1">{portfolio.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Updated {formatDate(portfolio.updatedAt)}
-                </p>
+                <Link href={`/portfolios/${portfolio.id}`}>
+                  <h3 className="font-semibold text-gray-900 line-clamp-1">{portfolio.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Updated {formatDate(portfolio.updatedAt)}
+                  </p>
+                </Link>
 
                 {/* Content Type Badges */}
                 {((portfolio.contentItems && portfolio.contentItems.length > 0) ||

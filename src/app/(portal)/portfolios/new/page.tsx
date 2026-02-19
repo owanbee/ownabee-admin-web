@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { PortfolioForm } from "@/components/forms/PortfolioForm";
 import { LoadingPage } from "@/components/ui/loading";
 import { api } from "@/lib/api";
+import { isApiError } from "@/lib/utils";
 import type { Student } from "@/types";
 
 function NewPortfolioContent() {
@@ -32,7 +33,7 @@ function NewPortfolioContent() {
         setStudent(data);
       } catch (err) {
         console.error("Failed to fetch student:", err);
-        setError(err instanceof Error ? err.message : "Failed to load student");
+        setError(isApiError(err) ? err.message : "Failed to load student");
       } finally {
         setIsLoading(false);
       }
